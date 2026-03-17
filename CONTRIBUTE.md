@@ -9,16 +9,16 @@
 - `references/endpoints/`：端点参数契约与请求示例。
 - `references/enums/`：本地枚举缓存（用于请求前校验）。
 - `prompts/`：路由与请求体生成提示词。
-- `scripts/`：可复用 API 客户端封装。
-- `examples/`：最小闭环示例（用于验收）。
+- `scripts/`：curl 请求模板与可复用 shell 脚本。
+- `examples/`：基于 curl 的最小闭环示例（用于验收）。
 
 ## 3. 新增能力域标准（必须五件套）
 以 `<domain>` 表示能力域（如 `filter`、`effect`、`text`）：
 - `rules/<domain>_rules.md`
 - `references/endpoints/<domain>.md`
 - `prompts/<domain>_ops.md`
-- `scripts/<domain>_ops.py`
-- `examples/<domain>_ops_demo.py`
+- `scripts/<domain>_ops.sh`
+- `examples/<domain>_ops_demo.sh`
 
 ## 4. 命名与边界
 - 文件命名统一小写下划线。
@@ -57,10 +57,10 @@
 - 同一能力域可拆多个枚举文件（如 `character_effect_types.json`、`scene_effect_types.json`）。
 
 ## 7. 脚本规范（scripts）
-- 客户端类命名：`<Domain>OpsClient`。
-- 每个端点对应一个同名方法（如 `add_effect()`、`modify_effect()`、`remove_effect()`）。
+- 请求实现以 `curl` 为默认方案，优先 shell 脚本，复杂逻辑写 Python 业务编排。
+- 每个端点对应一条独立 curl 请求模板，参数通过环境变量或 JSON 字符串注入。
 - 对枚举参数（如 `filter_type`、`effect_type`）必须先做本地校验，再请求接口。
-- 返回结构保持透传，失败时至少保留 `success/error/output`。
+- 失败时保留完整响应体，便于按 `error/Code/Message` 分类处理。
 
 ## 8. 规则规范（rules）
 - 全局通用异常写入 `rules/rules.md`。
@@ -69,14 +69,14 @@
 - 失败上下文最小集：`endpoint`、`draft_id`、`error`；领域按需补充 `material_id`、`track_name`、`start/end`。
 
 ## 9. Prompt 规范（prompts）
-- 明确输入、输出要求与 JSON 输出格式。
+- 明确输入、输出要求，输出必须是可直接执行的 curl 命令。
 - 明确动作路由范围（如 add/modify/remove）。
 - 明确枚举校验规则与冲突错误处理策略。
 
 ## 10. Example 规范（examples）
-- 必须提供最小闭环演示。
+- 必须提供基于 curl 的最小闭环演示。
 - 对可修改型能力，优先提供 `add -> modify -> remove` 链路。
-- 示例输出必须打印完整响应，便于排错。
+- 示例必须保留响应输出，便于排错与重试。
 
 ## 11. 索引维护
 新增或变更能力域后，必须同步更新：

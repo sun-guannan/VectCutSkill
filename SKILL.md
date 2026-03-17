@@ -24,13 +24,13 @@ dependency:
 export VECTCUT_API_KEY="<your_token>"
 ```
 
-快捷脚本与示例请求体见：
+快捷规则与请求模板见：
 
-- `skill_me/rules/`：决策规则与调用顺序
-- `skill_me/scripts/`：最小可复用调用封装
-- `skill_me/examples/`：端到端示例
-- `skill_me/prompts/`：素材理解与脚本规划提示词
-- `skill_me/references/`：端点参数与字段契约
+- `rules/`：决策规则与调用顺序
+- `scripts/`：curl 请求模板与执行脚本
+- `examples/`：curl 端到端示例
+- `prompts/`：请求路由与命令生成提示词
+- `references/`：端点参数与字段契约
 
 ## 执行路由
 
@@ -45,23 +45,19 @@ export VECTCUT_API_KEY="<your_token>"
 3. 提示层（prompts）
    - 路由与请求体生成：`skill_me/prompts/<domain>_ops.md`
 4. 执行层（scripts）
-   - API 调用与异常处理：`skill_me/scripts/<domain>_ops.py`
+   - 通过 curl 发起 API 请求：`scripts/<domain>_ops.sh`
 5. 验证层（examples）
-   - 最小闭环验证：`skill_me/examples/<domain>_ops_demo.py`
+   - 基于 curl 的最小闭环验证：`examples/<domain>_ops_demo.sh`
 
 ### 当前已落地能力域：filter
-- 规则：`skill_me/rules/filter_rules.md`
-- 参数：`skill_me/references/endpoints/filter.md`
-- 提示：`skill_me/prompts/filter_ops.md`
-- 执行：`skill_me/scripts/filter_ops.py`
-- 示例：`skill_me/examples/filter_ops_demo.py`
+- 规则：`rules/filter_rules.md`
+- 参数：`references/endpoints/filter.md`
+- 提示：`prompts/filter_ops.md`
 
 ### 当前已落地能力域：effect
-- 规则：`skill_me/rules/effect_rules.md`
-- 参数：`skill_me/references/endpoints/effect.md`
-- 提示：`skill_me/prompts/effect_ops.md`
-- 执行：`skill_me/scripts/effect_ops.py`
-- 示例：`skill_me/examples/effect_ops_demo.py`
+- 规则：`rules/effect_rules.md`
+- 参数：`references/endpoints/effect.md`
+- 提示：`prompts/effect_ops.md`
 
 ### 新增能力域时的约定
 - 域命名统一使用小写下划线：`text` / `audio` / `subtitle` / `effect` / `keyframe`。

@@ -13,6 +13,7 @@
 - 静音视频可跳过 asr_*。
 - 任一高级服务失败时，回退到 get_duration + asr_basic。
 - 内部统一使用秒；如果上游返回毫秒，先换算为秒。
+- 执行端点请求时默认使用 `curl`，复杂任务才去生成 Python 业务编排代码。
 
 ## 通用异常处理
 - 当接口返回 `{ "Code": "JWTTokenIsMissing", "Message": "the jwt token is missing" }` 时：先到 `https://www.vectcut.com` 登录并获取个人 API Key，然后设置环境变量 `VECTCUT_API_KEY` 后重试。

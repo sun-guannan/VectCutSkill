@@ -8,17 +8,14 @@
 
 输出要求：
 1) 先判断动作类型：add_effect / modify_effect / remove_effect
-2) 生成严格 JSON 请求体（不要 markdown 代码块）
+2) 直接输出可执行 `curl` 命令，不输出 Python 代码
 3) add_effect / modify_effect 的 effect_type 必须在可用特效列表中
-4) 如果报错包含 Unknown effect type，先替换为合法 effect_type 再输出
+4) 如果报错包含 Unknown effect type，先替换为合法 effect_type 再输出 curl
 5) 如果报错包含 New segment overlaps with existing segment [start: xxxx, end: yyyy]：
    - 方案A：改 track_name 新建特效轨道
    - 方案B：调整 start/end 与冲突区间错开
-6) 每次只输出一个最可执行方案
+6) 每次只输出一个最可执行 curl 方案
 
 输出格式：
-{
-  "endpoint": "add_effect | modify_effect | remove_effect",
-  "payload": {},
-  "reason": "简短说明"
-}
+- 第一行：一句简短说明
+- 第二行起：单条完整 curl 命令（含 method、url、Authorization、Content-Type、data）
