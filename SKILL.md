@@ -49,12 +49,19 @@ export VECTCUT_API_KEY="<your_token>"
 5. 验证层（examples）
    - 最小闭环验证：`skill_me/examples/<domain>_ops_demo.py`
 
-### 当前已落地能力域：filter / effect
-- 规则：`skill_me/rules/filter_rules.md`（含 filter 与 effect）
-- 参数：`skill_me/references/endpoints/filter.md`（含 filter 与 effect）
-- 提示：`skill_me/prompts/filter_ops.md`（含 filter 与 effect）
-- 执行：`skill_me/scripts/filter_ops.py`（含 filter 与 effect）
-- 示例：`skill_me/examples/filter_ops_demo.py`（含 filter 与 effect）
+### 当前已落地能力域：filter
+- 规则：`skill_me/rules/filter_rules.md`
+- 参数：`skill_me/references/endpoints/filter.md`
+- 提示：`skill_me/prompts/filter_ops.md`
+- 执行：`skill_me/scripts/filter_ops.py`
+- 示例：`skill_me/examples/filter_ops_demo.py`
+
+### 当前已落地能力域：effect
+- 规则：`skill_me/rules/effect_rules.md`
+- 参数：`skill_me/references/endpoints/effect.md`
+- 提示：`skill_me/prompts/effect_ops.md`
+- 执行：`skill_me/scripts/effect_ops.py`
+- 示例：`skill_me/examples/effect_ops_demo.py`
 
 ### 新增能力域时的约定
 - 域命名统一使用小写下划线：`text` / `audio` / `subtitle` / `effect` / `keyframe`。

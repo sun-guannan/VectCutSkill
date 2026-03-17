@@ -8,6 +8,8 @@
 
 ## 枚举文件
 - `enums/filter_types.json`：`filter_type` 可选值
+- `enums/character_effect_types.json`：`effect_category` 为 `character` 时的 `effect_type` 可选值
+- `enums/scene_effect_types.json`：`effect_category` 为 `scene` 时的 `effect_type` 可选值
 
 ## 维护规则
 - 新端点优先写入对应能力域文件。
