@@ -57,9 +57,11 @@
 - 同一能力域可拆多个枚举文件（如 `character_effect_types.json`、`scene_effect_types.json`）。
 
 ## 7. 脚本规范（scripts）
-- 请求实现以 `curl` 为默认方案，优先 shell 脚本，复杂逻辑写 Python 业务编排。
-- 每个端点对应一条独立 curl 请求模板，参数通过环境变量或 JSON 字符串注入。
+- 每个能力域默认同时提供 `curl` 与 Python（`requests`）两套请求实现，便于按场景选择。
+- 每个端点对应独立请求模板：curl 使用环境变量或 JSON 字符串注入参数，Python 保持同等参数语义。
 - 对枚举参数（如 `filter_type`、`effect_type`）必须先做本地校验，再请求接口。
+- Python 必须实现错误拦截：HTTP 非 2xx、响应非 JSON、业务 `success=false` 或 `error` 非空、关键字段缺失。
+- 若端点文档已定义可识别错误（如 `references/endpoints/effect.md`），Python 必须逐条匹配并给出对应处理策略。
 - 失败时保留完整响应体，便于按 `error/Code/Message` 分类处理。
 
 ## 8. 规则规范（rules）
@@ -69,13 +71,15 @@
 - 失败上下文最小集：`endpoint`、`draft_id`、`error`；领域按需补充 `material_id`、`track_name`、`start/end`。
 
 ## 9. Prompt 规范（prompts）
-- 明确输入、输出要求，输出必须是可直接执行的 curl 命令。
+- 明确输入、输出要求，输出必须同时包含可直接执行的 curl 命令与 Python 请求示例。
 - 明确动作路由范围（如 add/modify/remove）。
 - 明确枚举校验规则与冲突错误处理策略。
+- Python 输出必须包含错误分支处理逻辑，至少覆盖端点文档中的已知错误返回。
 
 ## 10. Example 规范（examples）
-- 必须提供基于 curl 的最小闭环演示。
+- 必须同时提供 curl 与 Python 的最小闭环演示。
 - 对可修改型能力，优先提供 `add -> modify -> remove` 链路。
+- Python 示例必须展示错误拦截分支（至少覆盖端点文档中的已知错误）。
 - 示例必须保留响应输出，便于排错与重试。
 
 ## 11. 索引维护
@@ -88,8 +92,9 @@
 - 是否新增了五件套文件。
 - 端点文档是否包含完整小节。
 - 枚举是否为 `source + items[].name` 结构。
-- 脚本是否包含本地枚举校验。
-- 示例是否可跑通最小闭环。
+- 脚本是否同时提供 curl 与 Python，并包含本地枚举校验。
+- Python 是否覆盖 HTTP/解析/业务错误与端点文档已知错误分支。
+- 示例是否提供 curl + Python 最小闭环并可跑通。
 - 索引文件是否已同步.
 
 # Git分支与合并规范
