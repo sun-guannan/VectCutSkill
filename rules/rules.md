@@ -21,4 +21,5 @@
 ## 领域规则入口
 - 滤镜端点（add_filter / modify_filter / remove_filter）异常处理见：`rules/filter_rules.md`
 - 特效端点（add_effect / modify_effect / remove_effect）异常处理见：`rules/effect_rules.md`
-- 素材时长端点（get_duration）异常处理见：`rules/material_rules.md`
+- 素材感知端点（get_duration / get_resolution / video_detail）异常处理见：`rules/material_rules.md`
+- 草稿管理端点（create_draft / modify_draft / remove_draft）异常处理见：`rules/draft_rules.md`

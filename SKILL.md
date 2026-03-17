@@ -12,9 +12,11 @@ dependency:
 
 * **素材感知**：分析用户提供的视频/图片/音频 URL，理解画面内容与剪辑指令；优先调用现有服务 `get_duration`、`get_resolution`、`video_detail`、`asr_basic`、`asr_nlp`、`asr_llm` 完成时长获取、分辨率判断、画面理解与语音内容解析。
 * **脚本规划**：根据主题（如“成语故事”、“产品评测”）自动拆解分镜，确定各片段时长。
-* **视觉编排**：自主选择合适的转场（Transitions）、特效（Effects）和滤镜（Filters）。
+* **草稿生命周期管理**：先创建并维护草稿，再进入编排流程；优先调用 `create_draft` 初始化草稿，按需使用 `modify_draft` 修改草稿名/封面，任务异常或清理阶段使用 `remove_draft` 删除草稿。
+* **反思自查**：在关键步骤后调用 `query_script` 回看当前草稿结构，核对轨道、素材与时间段是否符合预期；若不一致，先定位问题再执行修正操作。
+* **视觉编排**：基于已创建草稿自主选择并添加转场（Transitions）、特效（Effects）和滤镜（Filters）。
 * **AI 资源补全**：当素材不足时，主动调用 `generate_image`，`generate_speech` 或 `generate_ai_video` 生成 B-roll 填充。
-* **音画同步**：如果需要，可以利用`get_duration`计算素材的时长，精确对齐视频轨道与音频轨道。
+* **音画同步**：如果需要，可以利用 `get_duration` 计算素材时长，精确对齐视频轨道与音频轨道。
 
 ## 环境变量配置
 
@@ -37,13 +39,13 @@ export VECTCUT_API_KEY="<your_token>"
 按“能力域”路由。每个能力域复用同一条五层调用链：
 
 1. 规则层（rules）
-   - 全局：`skill_me/rules/rules.md`
-   - 领域：`skill_me/rules/<domain>_rules.md`
+   - 全局：`rules/rules.md`
+   - 领域：`rules/<domain>_rules.md`
 2. 参数层（references）
-   - 端点：`skill_me/references/endpoints/<domain>.md`
-   - 枚举：`skill_me/references/enums/*.json`
+   - 端点：`references/endpoints/<domain>.md`
+   - 枚举：`references/enums/*.json`
 3. 提示层（prompts）
-   - 路由与请求体生成：`skill_me/prompts/<domain>_ops.md`
+   - 路由与请求体生成：`prompts/<domain>_ops.md`
 4. 执行层（scripts）
    - 通过 curl 发起 API 请求：`scripts/<domain>_ops.sh`
 5. 验证层（examples）
@@ -63,6 +65,11 @@ export VECTCUT_API_KEY="<your_token>"
 - 规则：`rules/material_rules.md`
 - 参数：`references/endpoints/material.md`
 - 提示：`prompts/material_ops.md`
+
+### 当前已落地能力域：draft
+- 规则：`rules/draft_rules.md`
+- 参数：`references/endpoints/draft.md`
+- 提示：`prompts/draft_ops.md`
 
 ### 新增能力域时的约定
 - 域命名统一使用小写下划线：`text` / `audio` / `subtitle` / `effect` / `keyframe`。
