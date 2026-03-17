@@ -39,8 +39,9 @@ curl --location --request POST 'https://open.vectcut.com/cut_jianying/add_effect
 ### 关键响应字段
 - `success` (boolean)
 - `error` (string)
-- `output.draft_id` (string)
-- `output.draft_url` (string)
+- `output.draft_id` (string, 草稿id， 后续如果继续编辑这个草稿可以用上)
+- `output.draft_url` (string, 草稿url， 可以在浏览器中打开查看)
+- `output.material_id` (string, 特效id， 后续如果需要删除、修改这个特效可以用上)
 
 ### 错误返回
 - `error` 包含 `Unknown scene effect type`：`effect_type` 非法，查 `../enums/scene_effect_types.json` 后重试。
@@ -69,9 +70,9 @@ curl --location --request POST 'https://open.vectcut.com/cut_jianying/add_effect
 ### 关键响应字段
 - `success` (boolean)
 - `error` (string)
-- `output.draft_id` (string)
-- `output.draft_url` (string)
-- `output.material_id` (string)
+- `output.draft_id` (string, 草稿id， 后续如果继续编辑这个草稿可以用上)
+- `output.draft_url` (string, 草稿url， 可以在浏览器中打开查看)
+- `output.material_id` (string, 特效id， 后续如果需要删除、修改这个特效可以用上)
 
 ### 错误返回
 - `error` 包含 `Unknown scene effect type`：`effect_type` 非法，查 `../enums/scene_effect_types.json` 后重试。
@@ -94,8 +95,8 @@ curl --location --request POST 'https://open.vectcut.com/cut_jianying/add_effect
 ### 关键响应字段
 - `success` (boolean)
 - `error` (string)
-- `output.draft_id` (string)
-- `output.draft_url` (string)
+- `output.draft_id` (string, 草稿id， 后续如果继续编辑这个草稿可以用上)
+- `output.draft_url` (string, 草稿url， 可以在浏览器中打开查看)
 
 ### 错误返回
 - `error` 删除特效失败：仅提示并继续后续任务。
