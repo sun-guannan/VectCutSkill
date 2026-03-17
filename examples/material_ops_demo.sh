@@ -15,5 +15,9 @@ echo "=== CURL DEMO: get_resolution ==="
 CURL_RES_RESOLUTION="$("${ROOT}/scripts/material_ops.sh" get_resolution "${CURL_PAYLOAD}")"
 echo "CURL get_resolution => ${CURL_RES_RESOLUTION}"
 
+echo "=== CURL DEMO: video_detail ==="
+CURL_RES_DETAIL="$("${ROOT}/scripts/material_ops.sh" video_detail "${CURL_PAYLOAD}")"
+echo "CURL video_detail => ${CURL_RES_DETAIL}"
+
 echo "=== PYTHON DEMO ==="
 python3 "${ROOT}/examples/material_ops_demo.py" "${URL_INPUT}"

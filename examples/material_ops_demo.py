@@ -23,6 +23,7 @@ def main():
     payload = {"url": media_url}
     run_action("get_duration", payload)
     run_action("get_resolution", payload)
+    run_action("video_detail", payload)
 
 if __name__ == "__main__":
     main()

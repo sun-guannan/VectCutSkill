@@ -23,6 +23,7 @@
 - 当关键字段缺失：
   - `get_duration` 缺少 `output.duration` 或者 `output.duration` 为0。
   - `get_resolution` 缺少 `output.width` 或 `output.height` 或者为0。
+  - `video_detail` 缺少 `output` 或 `result.choices[0].message.content` 为空
   - 含义：关键字段缺失，无法进入后续编排。
   - 处理：标记为不可继续，要求更换素材 URL 或稍后重试。
   - 重试上限：1 次。

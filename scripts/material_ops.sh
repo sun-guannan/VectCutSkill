@@ -5,7 +5,7 @@ BASE_URL="${VECTCUT_BASE_URL:-https://open.vectcut.com/cut_jianying}"
 API_KEY="${VECTCUT_API_KEY:-}"
 
 usage() {
-  echo "Usage: $0 <get_duration|get_resolution> '<json_payload>'"
+  echo "Usage: $0 <get_duration|get_resolution|video_detail> '<json_payload>'"
   exit 1
 }
 
@@ -18,6 +18,7 @@ PAYLOAD="$2"
 case "$ACTION" in
   get_duration) ENDPOINT="get_duration" ;;
   get_resolution) ENDPOINT="get_resolution" ;;
+  video_detail) ENDPOINT="video_detail" ;;
   *) usage ;;
 esac
 

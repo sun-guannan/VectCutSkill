@@ -11,6 +11,7 @@ API_KEY = os.getenv("VECTCUT_API_KEY", "")
 ACTION_ENDPOINT = {
     "get_duration": "get_duration",
     "get_resolution": "get_resolution",
+    "video_detail": "video_detail",
 }
 
 def fail(error, output=None):
@@ -91,19 +92,24 @@ def call_api(endpoint, payload):
         height = output.get("height") if isinstance(output, dict) else None
         if width is None or height is None:
             fail("Missing key field: output.width/output.height", {"response": data})
+    if endpoint == "video_detail":
+        if not isinstance(output, dict):
+            fail("Missing key field: output", {"response": data})
+        if output.get("vlm_result") is None:
+            fail("Missing key field: output.vlm_result", {"response": data})
 
     print(json.dumps(data, ensure_ascii=False))
 
 def main():
     if len(sys.argv) < 3:
-        print(f"Usage: {sys.argv[0]} <get_duration|get_resolution> '<json_payload>'")
+        print(f"Usage: {sys.argv[0]} <get_duration|get_resolution|video_detail> '<json_payload>'")
         sys.exit(1)
 
     action = sys.argv[1]
     raw_payload = sys.argv[2]
     endpoint = ACTION_ENDPOINT.get(action)
     if not endpoint:
-        print(f"Usage: {sys.argv[0]} <get_duration|get_resolution> '<json_payload>'")
+        print(f"Usage: {sys.argv[0]} <get_duration|get_resolution|video_detail> '<json_payload>'")
         sys.exit(1)
 
     payload = parse_payload(raw_payload)
