@@ -10,7 +10,7 @@ dependency:
 
 ## 核心智能行为
 
-* **素材感知**：分析用户提供的视频/图片/音频 URL，理解画面内容与剪辑指令；优先调用现有服务 `get_duration`、`video_detail`、`asr_basic`、`asr_nlp`、`asr_llm` 完成时长获取、画面理解与语音内容解析。
+* **素材感知**：分析用户提供的视频/图片/音频 URL，理解画面内容与剪辑指令；优先调用现有服务 `get_duration`、`get_resolution`、`video_detail`、`asr_basic`、`asr_nlp`、`asr_llm` 完成时长获取、分辨率判断、画面理解与语音内容解析。
 * **脚本规划**：根据主题（如“成语故事”、“产品评测”）自动拆解分镜，确定各片段时长。
 * **视觉编排**：自主选择合适的转场（Transitions）、特效（Effects）和滤镜（Filters）。
 * **AI 资源补全**：当素材不足时，主动调用 `generate_image`，`generate_speech` 或 `generate_ai_video` 生成 B-roll 填充。
@@ -58,6 +58,11 @@ export VECTCUT_API_KEY="<your_token>"
 - 规则：`rules/effect_rules.md`
 - 参数：`references/endpoints/effect.md`
 - 提示：`prompts/effect_ops.md`
+
+### 当前已落地能力域：material
+- 规则：`rules/material_rules.md`
+- 参数：`references/endpoints/material.md`
+- 提示：`prompts/material_ops.md`
 
 ### 新增能力域时的约定
 - 域命名统一使用小写下划线：`text` / `audio` / `subtitle` / `effect` / `keyframe`。

@@ -4,6 +4,7 @@
 - `endpoint_params.md`：端点总索引
 - `endpoints/filter.md`：滤镜端点明细
 - `endpoints/effect.md`：特效端点明细
+- `endpoints/material.md`：素材感知端点明细（get_duration）
 
 ## Enums
 - `enums/filter_types.json`：滤镜枚举

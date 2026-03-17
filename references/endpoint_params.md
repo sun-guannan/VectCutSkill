@@ -5,6 +5,7 @@
 ## 按能力域拆分
 - `endpoints/filter.md`：滤镜相关端点（add_filter/modify_filter/remove_filter）
 - `endpoints/effect.md`：特效相关端点（add_effect/modify_effect/remove_effect）
+- `endpoints/material.md`：素材感知端点（get_duration）
 
 ## 枚举文件
 - `enums/filter_types.json`：`filter_type` 可选值
