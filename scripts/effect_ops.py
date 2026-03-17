@@ -1,7 +1,6 @@
 import json
 import os
-import urllib.parse
-import urllib.request
+import subprocess
 from pathlib import Path
 
 
@@ -13,22 +12,22 @@ class EffectOpsClient:
         self.character_enum = self.root / "references" / "enums" / "character_effect_types.json"
         self.scene_enum = self.root / "references" / "enums" / "scene_effect_types.json"
 
-    def _post(self, path: str, payload: dict) -> dict:
+    def _curl(self, method: str, path: str, payload: dict | None = None) -> dict:
         url = f"{self.base_url}/{path.lstrip('/')}"
-        data = json.dumps(payload, ensure_ascii=False).encode("utf-8")
-        req = urllib.request.Request(url=url, data=data, method="POST")
-        req.add_header("Authorization", f"Bearer {self.api_key}")
-        req.add_header("Content-Type", "application/json")
-        with urllib.request.urlopen(req, timeout=60) as resp:
-            return json.loads(resp.read().decode("utf-8"))
-
-    def _get(self, path: str, query: dict | None = None) -> dict:
-        q = f"?{urllib.parse.urlencode(query)}" if query else ""
-        url = f"{self.base_url}/{path.lstrip('/')}{q}"
-        req = urllib.request.Request(url=url, method="GET")
-        req.add_header("Authorization", f"Bearer {self.api_key}")
-        with urllib.request.urlopen(req, timeout=60) as resp:
-            return json.loads(resp.read().decode("utf-8"))
+        cmd = [
+            "curl", "--silent", "--show-error", "--location", "--request", method,
+            url,
+            "--header", f"Authorization: Bearer {self.api_key}",
+        ]
+        if payload is not None:
+            cmd.extend(["--header", "Content-Type: application/json", "--data-raw", json.dumps(payload, ensure_ascii=False)])
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        if result.returncode != 0:
+            return {"success": False, "error": result.stderr.strip() or "curl failed", "output": ""}
+        try:
+            return json.loads(result.stdout or "{}")
+        except json.JSONDecodeError:
+            return {"success": False, "error": "invalid json response", "output": result.stdout}
 
     def get_supported_effect_types(self) -> set[str]:
         names: set[str] = set()
@@ -36,7 +35,7 @@ class EffectOpsClient:
             if p.exists():
                 with p.open("r", encoding="utf-8") as f:
                     raw = json.load(f)
-                for item in raw.get("output", []):
+                for item in raw.get("items", []):
                     name = item.get("name")
                     if name:
                         names.add(name)
@@ -46,19 +45,19 @@ class EffectOpsClient:
         et = payload.get("effect_type")
         if et and et not in self.get_supported_effect_types():
             return {"success": False, "error": f"Unknown effect type: {et}", "output": ""}
-        return self._post("add_effect", payload)
+        return self._curl("POST", "add_effect", payload)
 
     def modify_effect(self, payload: dict) -> dict:
         et = payload.get("effect_type")
         if et and et not in self.get_supported_effect_types():
             return {"success": False, "error": f"Unknown effect type: {et}", "output": ""}
-        return self._post("modify_effect", payload)
+        return self._curl("POST", "modify_effect", payload)
 
     def remove_effect(self, payload: dict) -> dict:
-        return self._post("remove_effect", payload)
+        return self._curl("POST", "remove_effect", payload)
 
     def get_scene_effect_types(self) -> dict:
-        return self._get("get_video_scene_effect_types")
+        return self._curl("GET", "get_video_scene_effect_types")
 
     def get_character_effect_types(self) -> dict:
-        return self._get("get_video_character_effect_types")
+        return self._curl("GET", "get_video_character_effect_types")

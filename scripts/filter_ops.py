@@ -1,7 +1,7 @@
 import json
 import os
 import re
-import urllib.request
+import subprocess
 from pathlib import Path
 
 
@@ -14,12 +14,20 @@ class FilterOpsClient:
 
     def _post(self, path: str, payload: dict) -> dict:
         url = f"{self.base_url}/{path.lstrip('/')}"
-        data = json.dumps(payload, ensure_ascii=False).encode("utf-8")
-        req = urllib.request.Request(url=url, data=data, method="POST")
-        req.add_header("Authorization", f"Bearer {self.api_key}")
-        req.add_header("Content-Type", "application/json")
-        with urllib.request.urlopen(req, timeout=60) as resp:
-            return json.loads(resp.read().decode("utf-8"))
+        cmd = [
+            "curl", "--silent", "--show-error", "--location", "--request", "POST",
+            url,
+            "--header", f"Authorization: Bearer {self.api_key}",
+            "--header", "Content-Type: application/json",
+            "--data-raw", json.dumps(payload, ensure_ascii=False),
+        ]
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        if result.returncode != 0:
+            return {"success": False, "error": result.stderr.strip() or "curl failed", "output": ""}
+        try:
+            return json.loads(result.stdout or "{}")
+        except json.JSONDecodeError:
+            return {"success": False, "error": "invalid json response", "output": result.stdout}
 
     def get_supported_filter_types(self) -> list[str]:
         with self.enum_file.open("r", encoding="utf-8") as f:
@@ -46,7 +54,7 @@ class FilterOpsClient:
 
     @staticmethod
     def parse_overlap_range_us(error_text: str) -> tuple[int, int] | None:
-        m = re.search(r"$$start:\s*(\d+),\s*end:\s*(\d+)$$", error_text or "")
+        m = re.search(r"\[start:\s*(\d+),\s*end:\s*(\d+)\]", error_text or "")
         if not m:
             return None
         return int(m.group(1)), int(m.group(2))
