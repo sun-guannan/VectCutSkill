@@ -26,3 +26,4 @@
 - 素材感知端点（get_duration / get_resolution / video_detail）异常处理见：`rules/material_rules.md`
 - ASR 端点（asr_basic / asr_nlp / asr_llm）异常处理见：`rules/asr_rules.md`
 - 草稿管理端点（create_draft / modify_draft / remove_draft / query_draft）异常处理见：`rules/draft_rules.md`
+- 贴纸端点（search_sticker / add_sticker）异常处理见：`rules/sticker_rules.md`
