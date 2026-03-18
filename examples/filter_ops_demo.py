@@ -25,7 +25,7 @@ def create_draft():
         method="POST",
         headers={"Authorization": f"Bearer {API_KEY}", "Content-Type": "application/json"},
     )
-    with urllib.request.urlopen(req, timeout=60) as resp:
+    with urllib.request.urlopen(req) as resp:
         return json.loads(resp.read().decode("utf-8", errors="replace"))
 
 def run_action(action, payload):
