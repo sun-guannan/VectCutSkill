@@ -28,12 +28,18 @@ def parse_payload(raw):
         fail("Payload must be a JSON object", {"payload": data})
     return data
 
-def validate_payload(payload):
+def validate_payload(action, payload):
     url = payload.get("url")
     if not isinstance(url, str) or not url.strip():
         fail("url is required")
     if not (url.startswith("http://") or url.startswith("https://")):
         fail("url must start with http:// or https://")
+
+    prompt = payload.get("prompt")
+    if prompt is not None and not isinstance(prompt, str):
+        fail("prompt must be a string")
+    if action == "video_detail" and isinstance(prompt, str):
+        payload["prompt"] = prompt.strip()
 
 def parse_json_response(raw_text):
     try:
@@ -95,8 +101,8 @@ def call_api(endpoint, payload):
     if endpoint == "video_detail":
         if not isinstance(output, dict):
             fail("Missing key field: output", {"response": data})
-        if output.get("vlm_result") is None:
-            fail("Missing key field: output.vlm_result", {"response": data})
+        if output.get("vlm_result") is None and output.get("video_detail") is None:
+            fail("Missing key field: output.vlm_result/video_detail", {"response": data})
 
     print(json.dumps(data, ensure_ascii=False))
 
@@ -113,7 +119,7 @@ def main():
         sys.exit(1)
 
     payload = parse_payload(raw_payload)
-    validate_payload(payload)
+    validate_payload(action, payload)
     call_api(endpoint, payload)
 
 if __name__ == "__main__":

@@ -1,8 +1,9 @@
-# 素材感知端点规则（get_duration / get_resolution）
+# 素材感知端点规则（get_duration / get_resolution / video_detail）
 
 ## 适用范围
 - `POST /cut_jianying/get_duration`
 - `POST /cut_jianying/get_resolution`
+- `POST /cut_jianying/video_detail`
 
 ## 专属异常处理
 - 当 HTTP 状态码非 2xx：
@@ -23,7 +24,7 @@
 - 当关键字段缺失：
   - `get_duration` 缺少 `output.duration` 或者 `output.duration` 为0。
   - `get_resolution` 缺少 `output.width` 或 `output.height` 或者为0。
-  - `video_detail` 缺少 `output` 或 `result.choices[0].message.content` 为空
+  - `video_detail` 缺少 `output` 或 `output.video_detail` 为空
   - 含义：关键字段缺失，无法进入后续编排。
   - 处理：标记为不可继续，要求更换素材 URL 或稍后重试。
   - 重试上限：1 次。

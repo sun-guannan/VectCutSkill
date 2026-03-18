@@ -2,16 +2,18 @@
 
 ## 素材感知顺序
 1. get_duration
-2. video_detail
-3. asr_basic
-4. asr_nlp
-5. asr_llm
+2. get_resolution
+3. video_detail（可传 prompt 定向理解）
+4. asr_llm
+5. asr_nlp
+6. asr_basic
 
 ## 通用策略
 - 先获取时长，再做视觉和语音理解。
 - 纯音频可跳过 video_detail。
-- 静音视频可跳过 asr_*。
-- 任一高级服务失败时，回退到 get_duration + asr_basic。
+- 无人声视频可跳过 asr_*。
+- ASR 默认优先 asr_llm，失败后按 asr_nlp -> asr_basic 顺序降级。
+- ASR 三接口回包结构不一致：`asr_basic` 解析 `result.raw.result.utterances`，`asr_nlp/asr_llm` 解析 `segments`。
 - 内部统一使用秒；如果上游返回毫秒，先换算为秒。
 - 执行端点请求时默认使用 `curl`，复杂任务才去生成 Python 业务编排代码。
 
@@ -22,4 +24,5 @@
 - 滤镜端点（add_filter / modify_filter / remove_filter）异常处理见：`rules/filter_rules.md`
 - 特效端点（add_effect / modify_effect / remove_effect）异常处理见：`rules/effect_rules.md`
 - 素材感知端点（get_duration / get_resolution / video_detail）异常处理见：`rules/material_rules.md`
-- 草稿管理端点（create_draft / modify_draft / remove_draft）异常处理见：`rules/draft_rules.md`
+- ASR 端点（asr_basic / asr_nlp / asr_llm）异常处理见：`rules/asr_rules.md`
+- 草稿管理端点（create_draft / modify_draft / remove_draft / query_draft）异常处理见：`rules/draft_rules.md`

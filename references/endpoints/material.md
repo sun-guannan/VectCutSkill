@@ -15,7 +15,8 @@ curl --location --request POST 'https://open.vectcut.com/cut_jianying/get_durati
 --header 'Authorization: Bearer <token>' \
 --header 'Content-Type: application/json' \
 --data-raw '{
-  "url":"https://example.com/demo.mp4"
+  "url":"https://example.com/demo.mp4",
+  "prompt":"请描述人物朝向、主体之间的空间关系、主要物体位置以及声音音调和风格"
 }'
 ```
 
@@ -71,6 +72,7 @@ curl --location --request POST 'https://open.vectcut.com/cut_jianying/get_resolu
 
 ### 请求参数
 - `url` (string, required): 待分析的视频 URL，需可公网访问。
+- `prompt` (string, optional): 定向分析提示词，用于约束输出重点（如画面关系、人物朝向、物体位置、声音风格）。
 
 ### 示例请求
 ```bash
@@ -86,7 +88,7 @@ curl --location --request POST 'https://open.vectcut.com/cut_jianying/video_deta
 - `success` (boolean)
 - `error` (string)
 - `result` (object)
-- `result.choices[0].message.content` (string, 大模型视觉理解结果)
+- `output.video_detail` (string, 大模型视觉理解结果)
 - `purchase_link` (string)
 
 ### 错误返回

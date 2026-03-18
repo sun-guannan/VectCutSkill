@@ -3,6 +3,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 BASE_URL="${VECTCUT_BASE_URL:-https://open.vectcut.com/cut_jianying}"
 URL_INPUT="${1:-https://example.com/demo.mp4}"
+DETAIL_PROMPT="${2:-请描述画面主体关系、人物朝向、物体位置与声音风格}"
 
 [[ -z "${VECTCUT_API_KEY:-}" ]] && echo "ERROR: VECTCUT_API_KEY is required" && exit 1
 
@@ -16,8 +17,9 @@ CURL_RES_RESOLUTION="$("${ROOT}/scripts/material_ops.sh" get_resolution "${CURL_
 echo "CURL get_resolution => ${CURL_RES_RESOLUTION}"
 
 echo "=== CURL DEMO: video_detail ==="
-CURL_RES_DETAIL="$("${ROOT}/scripts/material_ops.sh" video_detail "${CURL_PAYLOAD}")"
+DETAIL_PAYLOAD="{\"url\":\"${URL_INPUT}\",\"prompt\":\"${DETAIL_PROMPT}\"}"
+CURL_RES_DETAIL="$("${ROOT}/scripts/material_ops.sh" video_detail "${DETAIL_PAYLOAD}")"
 echo "CURL video_detail => ${CURL_RES_DETAIL}"
 
 echo "=== PYTHON DEMO ==="
-python3 "${ROOT}/examples/material_ops_demo.py" "${URL_INPUT}"
+python3 "${ROOT}/examples/material_ops_demo.py" "${URL_INPUT}" "${DETAIL_PROMPT}"

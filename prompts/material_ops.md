@@ -2,16 +2,18 @@
 
 输入：
 - 素材 URL（音频或视频）
+- 可选分析提示词 prompt（仅 video_detail 使用）
 - 可能的上次报错 error
 
 输出要求：
 1) 仅路由到动作：get_duration、get_resolution 或 video_detail
 2) 同时输出可执行 curl 命令与 Python 请求代码
 3) 请求体必须包含 `url`
-4) Python 代码必须包含错误拦截：HTTP 非 2xx、响应非 JSON、`success=false` 或 `error` 非空、关键字段缺失
+4) 当动作为 `video_detail` 且用户给出分析目标时，请求体必须携带 `prompt`
+5) Python 代码必须包含错误拦截：HTTP 非 2xx、响应非 JSON、`success=false` 或 `error` 非空、关键字段缺失
    - get_duration: `output.duration`
    - get_resolution: `output.width`、`output.height`
-   - video_detail: `output`，优先校验 `result.choices[0].message.content`
+   - video_detail: `output`，优先校验 `output.video_detail`
 5) 如果上次错误与 URL 可访问性相关，先更换 URL 再输出命令
 6) 每次只输出一组最可执行方案（curl + Python）
 

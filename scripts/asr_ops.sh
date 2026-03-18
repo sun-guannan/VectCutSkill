@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-BASE_URL="${VECTCUT_BASE_URL:-https://open.vectcut.com/cut_jianying}"
+BASE_URL="${VECTCUT_BASE_URL:-https://open.vectcut.com/llm}"
 API_KEY="${VECTCUT_API_KEY:-}"
 
 usage() {
-  echo "Usage: $0 <get_duration|get_resolution|video_detail> '<json_payload>'"
+  echo "Usage: $0 <asr_basic|asr_nlp|asr_llm> '<json_payload>'"
   exit 1
 }
 
@@ -16,14 +16,15 @@ ACTION="$1"
 PAYLOAD="$2"
 
 case "$ACTION" in
-  get_duration) ENDPOINT="get_duration" ;;
-  get_resolution) ENDPOINT="get_resolution" ;;
-  video_detail) ENDPOINT="video_detail" ;;
+  asr_basic) ENDPOINT="asr_basic" ;;
+  asr_nlp) ENDPOINT="asr_nlp" ;;
+  asr_llm) ENDPOINT="asr_llm" ;;
   *) usage ;;
 esac
 
 URL_VALUE="$(printf '%s' "$PAYLOAD" | sed -n 's/.*"url"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p')"
-PROMPT_VALUE="$(printf '%s' "$PAYLOAD" | sed -n 's/.*"prompt"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p')"
+CONTENT_VALUE="$(printf '%s' "$PAYLOAD" | sed -n 's/.*"content"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p')"
+
 if [[ -z "$URL_VALUE" ]]; then
   echo "{\"success\":false,\"error\":\"url is required\",\"output\":\"\"}"
   exit 0
@@ -34,8 +35,8 @@ if [[ ! "$URL_VALUE" =~ ^https?:// ]]; then
   exit 0
 fi
 
-if [[ "$ACTION" == "video_detail" && "$PAYLOAD" == *"\"prompt\""* && -z "$PROMPT_VALUE" ]]; then
-  echo "{\"success\":false,\"error\":\"prompt must be a non-empty string when provided\",\"output\":\"\"}"
+if [[ "$PAYLOAD" == *"\"content\""* && -z "$CONTENT_VALUE" ]]; then
+  echo "{\"success\":false,\"error\":\"content must be a non-empty string when provided\",\"output\":\"\"}"
   exit 0
 fi
 
