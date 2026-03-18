@@ -17,7 +17,7 @@ CURL_RES_RESOLUTION="$("${ROOT}/scripts/material_ops.sh" get_resolution "${CURL_
 echo "CURL get_resolution => ${CURL_RES_RESOLUTION}"
 
 echo "=== CURL DEMO: video_detail ==="
-DETAIL_PAYLOAD="{\"url\":\"${URL_INPUT}\",\"prompt\":\"${DETAIL_PROMPT}\"}"
+DETAIL_PAYLOAD="{\"video_url\":\"${URL_INPUT}\",\"prompt\":\"${DETAIL_PROMPT}\"}"
 CURL_RES_DETAIL="$("${ROOT}/scripts/material_ops.sh" video_detail "${DETAIL_PAYLOAD}")"
 echo "CURL video_detail => ${CURL_RES_DETAIL}"
 

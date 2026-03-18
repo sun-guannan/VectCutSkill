@@ -5,7 +5,8 @@ import sys
 import urllib.error
 import urllib.request
 
-BASE_URL = os.getenv("VECTCUT_BASE_URL", "https://open.vectcut.com/cut_jianying")
+CUT_BASE_URL = os.getenv("VECTCUT_BASE_URL", "https://open.vectcut.com/cut_jianying")
+LLM_BASE_URL = os.getenv("VECTCUT_LLM_BASE_URL", "https://open.vectcut.com/llm")
 API_KEY = os.getenv("VECTCUT_API_KEY", "")
 
 ACTION_ENDPOINT = {
@@ -28,18 +29,31 @@ def parse_payload(raw):
         fail("Payload must be a JSON object", {"payload": data})
     return data
 
+def _clean_text(v):
+    return v.strip().strip("`").strip() if isinstance(v, str) else v
+
 def validate_payload(action, payload):
-    url = payload.get("url")
-    if not isinstance(url, str) or not url.strip():
-        fail("url is required")
+    raw_url = payload.get("video_url") if action == "video_detail" else payload.get("url")
+    if raw_url is None:
+        raw_url = payload.get("url") or payload.get("video_url")
+    url = _clean_text(raw_url)
+    if not isinstance(url, str) or not url:
+        fail("url/video_url is required")
     if not (url.startswith("http://") or url.startswith("https://")):
-        fail("url must start with http:// or https://")
+        fail("url/video_url must start with http:// or https://")
+
+    if action == "video_detail":
+        payload["video_url"] = url
+        payload.pop("url", None)
+    else:
+        payload["url"] = url
+        payload.pop("video_url", None)
 
     prompt = payload.get("prompt")
     if prompt is not None and not isinstance(prompt, str):
         fail("prompt must be a string")
-    if action == "video_detail" and isinstance(prompt, str):
-        payload["prompt"] = prompt.strip()
+    if isinstance(prompt, str):
+        payload["prompt"] = _clean_text(prompt)
 
 def parse_json_response(raw_text):
     try:
@@ -51,7 +65,8 @@ def call_api(endpoint, payload):
     if not API_KEY:
         fail("VECTCUT_API_KEY is required")
 
-    url = f"{BASE_URL.rstrip('/')}/{endpoint}"
+    base_url = LLM_BASE_URL if endpoint == "video_detail" else CUT_BASE_URL
+    url = f"{base_url.rstrip('/')}/{endpoint}"
     body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
     req = urllib.request.Request(
         url=url,
@@ -101,8 +116,8 @@ def call_api(endpoint, payload):
     if endpoint == "video_detail":
         if not isinstance(output, dict):
             fail("Missing key field: output", {"response": data})
-        if output.get("vlm_result") is None and output.get("video_detail") is None:
-            fail("Missing key field: output.vlm_result/video_detail", {"response": data})
+        if output.get("vlm_result") is None and output.get("video_detail") is None and data.get("result") is None:
+            fail("Missing key field: output.vlm_result/video_detail/result", {"response": data})
 
     print(json.dumps(data, ensure_ascii=False))
 

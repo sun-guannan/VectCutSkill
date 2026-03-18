@@ -11,11 +11,11 @@
 
 ### 示例请求
 ```bash
-curl --location --request POST 'https://open.vectcut.com/cut_jianying/get_duration' \
+curl --location --request POST 'https://open.vectcut.com/llm/video_detail' \
 --header 'Authorization: Bearer <token>' \
 --header 'Content-Type: application/json' \
 --data-raw '{
-  "url":"https://example.com/demo.mp4",
+  "video_url":"https://example.com/demo.mp4",
   "prompt":"请描述人物朝向、主体之间的空间关系、主要物体位置以及声音音调和风格"
 }'
 ```
@@ -67,11 +67,11 @@ curl --location --request POST 'https://open.vectcut.com/cut_jianying/get_resolu
 ## video_detail
 
 - Method: `POST`
-- Path: `/cut_jianying/video_detail`
+- Path: `/llm/video_detail`
 - 用途：利用大模型对视频内容做细粒度文字描述，产出可用于脚本规划与镜头理解的语义结果。
 
 ### 请求参数
-- `url` (string, required): 待分析的视频 URL，需可公网访问。
+- `video_url` (string, required): 待分析的视频 URL，需可公网访问。
 - `prompt` (string, optional): 定向分析提示词，用于约束输出重点（如画面关系、人物朝向、物体位置、声音风格）。
 
 ### 示例请求

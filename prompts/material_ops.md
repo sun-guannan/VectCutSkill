@@ -8,8 +8,8 @@
 输出要求：
 1) 仅路由到动作：get_duration、get_resolution 或 video_detail
 2) 同时输出可执行 curl 命令与 Python 请求代码
-3) 请求体必须包含 `url`
-4) 当动作为 `video_detail` 且用户给出分析目标时，请求体必须携带 `prompt`
+3) `get_duration/get_resolution` 请求体必须包含 `url`
+4) `video_detail` 请求体必须包含 `video_url`；当用户给出分析目标时必须携带 `prompt`
 5) Python 代码必须包含错误拦截：HTTP 非 2xx、响应非 JSON、`success=false` 或 `error` 非空、关键字段缺失
    - get_duration: `output.duration`
    - get_resolution: `output.width`、`output.height`

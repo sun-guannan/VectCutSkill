@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-BASE_URL="${VECTCUT_BASE_URL:-https://open.vectcut.com/cut_jianying}"
+CUT_BASE_URL="${VECTCUT_BASE_URL:-https://open.vectcut.com/cut_jianying}"
+LLM_BASE_URL="${VECTCUT_LLM_BASE_URL:-https://open.vectcut.com/llm}"
 API_KEY="${VECTCUT_API_KEY:-}"
 
 usage() {
@@ -23,24 +24,47 @@ case "$ACTION" in
 esac
 
 URL_VALUE="$(printf '%s' "$PAYLOAD" | sed -n 's/.*"url"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p')"
+VIDEO_URL_VALUE="$(printf '%s' "$PAYLOAD" | sed -n 's/.*"video_url"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p')"
 PROMPT_VALUE="$(printf '%s' "$PAYLOAD" | sed -n 's/.*"prompt"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p')"
-if [[ -z "$URL_VALUE" ]]; then
-  echo "{\"success\":false,\"error\":\"url is required\",\"output\":\"\"}"
+CLEAN_URL="${URL_VALUE//\`/}"
+CLEAN_VIDEO_URL="${VIDEO_URL_VALUE//\`/}"
+CLEAN_PROMPT="${PROMPT_VALUE//\`/}"
+
+if [[ "$ACTION" == "video_detail" ]]; then
+  FINAL_URL="${CLEAN_VIDEO_URL:-$CLEAN_URL}"
+else
+  FINAL_URL="${CLEAN_URL:-$CLEAN_VIDEO_URL}"
+fi
+
+if [[ -z "$FINAL_URL" ]]; then
+  echo "{\"success\":false,\"error\":\"url/video_url is required\",\"output\":\"\"}"
   exit 0
 fi
 
-if [[ ! "$URL_VALUE" =~ ^https?:// ]]; then
-  echo "{\"success\":false,\"error\":\"url must start with http:// or https://\",\"output\":\"\"}"
+if [[ ! "$FINAL_URL" =~ ^https?:// ]]; then
+  echo "{\"success\":false,\"error\":\"url/video_url must start with http:// or https://\",\"output\":\"\"}"
   exit 0
 fi
 
-if [[ "$ACTION" == "video_detail" && "$PAYLOAD" == *"\"prompt\""* && -z "$PROMPT_VALUE" ]]; then
+if [[ "$ACTION" == "video_detail" && "$PAYLOAD" == *"\"prompt\""* && -z "$CLEAN_PROMPT" ]]; then
   echo "{\"success\":false,\"error\":\"prompt must be a non-empty string when provided\",\"output\":\"\"}"
   exit 0
+fi
+
+if [[ "$ACTION" == "video_detail" ]]; then
+  BASE_URL="$LLM_BASE_URL"
+  if [[ -n "$CLEAN_PROMPT" ]]; then
+    NORMALIZED_PAYLOAD="{\"video_url\":\"${FINAL_URL}\",\"prompt\":\"${CLEAN_PROMPT}\"}"
+  else
+    NORMALIZED_PAYLOAD="{\"video_url\":\"${FINAL_URL}\"}"
+  fi
+else
+  BASE_URL="$CUT_BASE_URL"
+  NORMALIZED_PAYLOAD="{\"url\":\"${FINAL_URL}\"}"
 fi
 
 curl --silent --show-error --location --request POST "${BASE_URL}/${ENDPOINT}" \
   --header "Authorization: Bearer ${API_KEY}" \
   --header "Content-Type: application/json" \
-  --data-raw "${PAYLOAD}"
+  --data-raw "${NORMALIZED_PAYLOAD}"
 echo

@@ -25,7 +25,7 @@ def main():
     run_action("get_duration", payload)
     run_action("get_resolution", payload)
 
-    detail_payload = {"url": media_url, "prompt": detail_prompt}
+    detail_payload = {"video_url": media_url, "prompt": detail_prompt}
     run_action("video_detail", detail_payload)
 
 if __name__ == "__main__":
