@@ -9,11 +9,17 @@
 - `endpoints/draft.md`：草稿管理端点（create_draft/modify_draft/remove_draft/query_script）
 - `endpoints/asr.md`：语音识别端点（asr_basic/asr_nlp/asr_llm）
 - `endpoints/generate_video.md`：云渲染端点（generate_video/task_status）
+- `endpoints/generate_speech.md`：语音合成端点（generate_speech）
+- `endpoints/process.md`：预处理端点（extract_audio/split_video）
 
 ## 枚举文件
 - `enums/filter_types.json`：`filter_type` 可选值
 - `enums/character_effect_types.json`：`effect_category` 为 `character` 时的 `effect_type` 可选值
 - `enums/scene_effect_types.json`：`effect_category` 为 `scene` 时的 `effect_type` 可选值
+- `enums/minimax_voiceids.json`：`provider=minimax` 的 `voice_id` 可选值
+- `enums/azure_voiceids.json`：`provider=azure` 的 `voice_id` 可选值
+- `enums/volc_voiceids.json`：`provider=volc` 的 `voice_id` 可选值
+- `enums/fish_voiceids.json`：`provider=fish` 的 `voice_id` 可选值
 
 ## Query Script 输出解析
 - `query_script` 的 `output` 为草稿结构体解析入口。

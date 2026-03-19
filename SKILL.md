@@ -21,9 +21,10 @@ dependency:
 * **草稿生命周期管理**：先创建并维护草稿，再进入编排流程；优先调用 `create_draft` 初始化草稿，按需使用 `modify_draft` 修改草稿名/封面，任务异常或清理阶段使用 `remove_draft` 删除草稿。
 * **反思自查**：在关键步骤后调用 `query_script` 回看当前草稿结构，核对轨道、素材与时间段是否符合预期；若不一致，先定位问题再执行修正操作。
 * **视觉编排**：基于已创建草稿自主选择并添加转场（Transitions）、特效（Effects）和滤镜（Filters）。
-* **AI 资源补全**：当素材不足时，主动调用 `generate_image`，`generate_speech` 或 `generate_ai_video` 生成 B-roll 填充。
+* **AI 资源补全**：当素材不足时，主动调用 `generate_image`，`generate_speech` 或 `generate_ai_video` 生成 B-roll 填充；其中 `generate_speech` 通过 `text + provider + model + voice_id` 合成配音，可配合 `volume`、`target_start`、`effect_type/effect_params` 控制入轨位置与音色效果。
 * **云渲染与结果核验**：通过 `generate_video` 发起云渲染，再用 `task_status` 轮询任务状态。云渲染用于两类目标：创作中渲染中间结果核对预期；流程结束渲染最终成片并输出可直接播放的视频链接。
 * **音画同步**：如果需要，可以利用 `get_duration` 计算素材时长，精确对齐视频轨道与音频轨道。
+* **音视频预处理工具**：在编排前可优先使用基础处理端点清洗素材。`extract_audio` 可从视频中提取音频（`POST /process/extract_audio`，入参 `video_url`）；`split_video` 可按时间段切分视频或音频（`POST /process/split_video`，入参 `video_url`、`start`、`end`）。适用于替换现有视频 B-roll、素材混剪、先切段再入草稿等场景。
 
 ## 环境变量配置
 
@@ -80,6 +81,29 @@ export VECTCUT_API_KEY="<your_token>"
 - 规则：`rules/draft_rules.md`
 - 参数：`references/endpoints/draft.md`
 - 提示：`prompts/draft_ops.md`
+
+### 当前已落地能力域：asr
+- 规则：`rules/asr_rules.md`
+- 参数：`references/endpoints/asr.md`
+- 提示：`prompts/asr_ops.md`
+
+### 当前已落地能力域：process
+- 规则：`rules/process_rules.md`
+- 参数：`references/endpoints/process.md`
+- 提示：`prompts/process_ops.md`
+
+### 当前已落地能力域：generate_video
+- 规则：`rules/generate_video_rules.md`
+- 参数：`references/endpoints/generate_video.md`
+- 提示：`prompts/generate_video_ops.md`
+
+### 当前已落地能力域：generate_speech
+- 规则：`rules/generate_speech_rules.md`
+- 参数：`references/endpoints/generate_speech.md`
+- 提示：`prompts/generate_speech_ops.md`
+- 端点：`POST /cut_jianying/generate_speech`
+- 关键入参：`text`、`provider`、`model`、`voice_id`、`volume`、`target_start`、`effect_type`、`effect_params`
+- 关键出参：`audio_url`、`draft_id`、`draft_url`、`material_id`
 
 ### 新增能力域时的约定
 - 域命名统一使用小写下划线：`text` / `audio` / `subtitle` / `effect` / `keyframe`。
@@ -224,6 +248,6 @@ curl -X POST http://open.vectcut.com/cut_jianying/task_status \
 ## 使用提示（让 AI 更“会剪”）
 
 - 让用户提供素材 URL、期望时长、画面比例（9:16/16:9/1:1）、字幕风格、BGM 风格
-- 需要更细粒度理解时，调用 `video_detail` 并传入明确 `prompt`（关系/朝向/位置/声音风格），再据此做镜头衔接、特效与字幕排版决策
+- 需要更细粒度理解时，调用 `video_detail` 理解（关系/朝向/位置/声音风格），再据此做镜头衔接、特效与字幕排版决策
 - 需要严格可控的效果时，先拉取枚举（转场/特效/滤镜/字体），再进行选择与组装
 - 复杂需求可以在上层自己组织调用顺序，这里只负责暴露基础视频编辑与渲染接口

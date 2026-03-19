@@ -8,11 +8,17 @@
 - `endpoints/draft.md`：草稿管理端点明细（create_draft/modify_draft/remove_draft/query_script）
 - `endpoints/asr.md`：语音识别端点明细（asr_basic/asr_nlp/asr_llm）
 - `endpoints/generate_video.md`：云渲染端点明细（generate_video/task_status）
+- `endpoints/generate_speech.md`：语音合成端点明细（generate_speech）
+- `endpoints/process.md`：预处理端点明细（extract_audio/split_video）
 
 ## Enums
 - `enums/filter_types.json`：滤镜枚举
 - `enums/character_effect_types.json`：人物特效枚举
 - `enums/scene_effect_types.json`：场景特效枚举
+- `enums/minimax_voiceids.json`：Minimax 音色枚举
+- `enums/azure_voiceids.json`：Azure 音色枚举
+- `enums/volc_voiceids.json`：Volc 音色枚举
+- `enums/fish_voiceids.json`：Fish 音色枚举
 
 ## Draft Query 解析
 - `draft_query_notes.md`：`query_script` 返回 `output` 的结构解读（总体配置、materials、ID 关联、轨道、关键帧）
