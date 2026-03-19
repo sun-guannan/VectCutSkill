@@ -7,6 +7,7 @@
 - `endpoints/material.md`：素材感知端点明细（get_duration/get_resolution/video_detail）
 - `endpoints/draft.md`：草稿管理端点明细（create_draft/modify_draft/remove_draft/query_script）
 - `endpoints/asr.md`：语音识别端点明细（asr_basic/asr_nlp/asr_llm）
+- `endpoints/generate_video.md`：云渲染端点明细（generate_video/task_status）
 
 ## Enums
 - `enums/filter_types.json`：滤镜枚举

@@ -49,12 +49,6 @@ def validate_payload(action, payload):
         payload["url"] = url
         payload.pop("video_url", None)
 
-    prompt = payload.get("prompt")
-    if prompt is not None and not isinstance(prompt, str):
-        fail("prompt must be a string")
-    if isinstance(prompt, str):
-        payload["prompt"] = _clean_text(prompt)
-
 def parse_json_response(raw_text):
     try:
         return json.loads(raw_text)

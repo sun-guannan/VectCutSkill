@@ -25,10 +25,8 @@ esac
 
 URL_VALUE="$(printf '%s' "$PAYLOAD" | sed -n 's/.*"url"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p')"
 VIDEO_URL_VALUE="$(printf '%s' "$PAYLOAD" | sed -n 's/.*"video_url"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p')"
-PROMPT_VALUE="$(printf '%s' "$PAYLOAD" | sed -n 's/.*"prompt"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p')"
 CLEAN_URL="${URL_VALUE//\`/}"
 CLEAN_VIDEO_URL="${VIDEO_URL_VALUE//\`/}"
-CLEAN_PROMPT="${PROMPT_VALUE//\`/}"
 
 if [[ "$ACTION" == "video_detail" ]]; then
   FINAL_URL="${CLEAN_VIDEO_URL:-$CLEAN_URL}"
@@ -46,18 +44,9 @@ if [[ ! "$FINAL_URL" =~ ^https?:// ]]; then
   exit 0
 fi
 
-if [[ "$ACTION" == "video_detail" && "$PAYLOAD" == *"\"prompt\""* && -z "$CLEAN_PROMPT" ]]; then
-  echo "{\"success\":false,\"error\":\"prompt must be a non-empty string when provided\",\"output\":\"\"}"
-  exit 0
-fi
-
 if [[ "$ACTION" == "video_detail" ]]; then
   BASE_URL="$LLM_BASE_URL"
-  if [[ -n "$CLEAN_PROMPT" ]]; then
-    NORMALIZED_PAYLOAD="{\"video_url\":\"${FINAL_URL}\",\"prompt\":\"${CLEAN_PROMPT}\"}"
-  else
-    NORMALIZED_PAYLOAD="{\"video_url\":\"${FINAL_URL}\"}"
-  fi
+  NORMALIZED_PAYLOAD="{\"video_url\":\"${FINAL_URL}\"}"
 else
   BASE_URL="$CUT_BASE_URL"
   NORMALIZED_PAYLOAD="{\"url\":\"${FINAL_URL}\"}"

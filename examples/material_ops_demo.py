@@ -15,7 +15,6 @@ def run_action(action, payload):
 
 def main():
     media_url = sys.argv[1] if len(sys.argv) > 1 else "https://example.com/demo.mp4"
-    detail_prompt = sys.argv[2] if len(sys.argv) > 2 else ""
 
     if not API_KEY:
         print("ERROR: VECTCUT_API_KEY is required")
@@ -25,7 +24,7 @@ def main():
     run_action("get_duration", payload)
     run_action("get_resolution", payload)
 
-    detail_payload = {"video_url": media_url, "prompt": detail_prompt}
+    detail_payload = {"video_url": media_url}
     run_action("video_detail", detail_payload)
 
 if __name__ == "__main__":

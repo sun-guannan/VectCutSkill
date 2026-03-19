@@ -10,7 +10,7 @@ dependency:
 
 ## 核心智能行为
 
-* **素材感知**：分析用户提供的视频/图片/音频 URL，理解画面内容与剪辑指令；优先调用现有服务 `get_duration`、`get_resolution`、`video_detail`、`asr_basic`、`asr_nlp`、`asr_llm` 完成时长获取、分辨率判断、画面理解与语音内容解析。`video_detail` 支持输入 `prompt`，可按任务目标定向提取细粒度语义（画面主体关系、人物朝向、物体位置、声音音调与风格等）。
+* **素材感知**：分析用户提供的视频/图片/音频 URL，理解画面内容与剪辑指令；优先调用现有服务 `get_duration`、`get_resolution`、`video_detail`、`asr_basic`、`asr_nlp`、`asr_llm` 完成时长获取、分辨率判断、画面理解与语音内容解析。`video_detail` 可提取细粒度语义（画面主体关系、人物朝向、物体位置、声音音调与风格等）。
 * **ASR 按需策略**：默认优先级 `asr_llm > asr_nlp > asr_basic`，优先使用更高能力接口，仅在明确只需基础识别或时延敏感场景下降级。
   - `asr_basic`：速度最快，返回完整文案、句级时间、字级时间；中文/英文效果好，支持粤语、上海话、闽南语、四川/陕西方言；更适合横屏字幕或素材初步理解。
   - `asr_nlp`：速度中等，在 basic 基础上增加语义分句（每句不超过 12 字），更适合竖屏字幕。
@@ -22,6 +22,7 @@ dependency:
 * **反思自查**：在关键步骤后调用 `query_script` 回看当前草稿结构，核对轨道、素材与时间段是否符合预期；若不一致，先定位问题再执行修正操作。
 * **视觉编排**：基于已创建草稿自主选择并添加转场（Transitions）、特效（Effects）和滤镜（Filters）。
 * **AI 资源补全**：当素材不足时，主动调用 `generate_image`，`generate_speech` 或 `generate_ai_video` 生成 B-roll 填充。
+* **云渲染与结果核验**：通过 `generate_video` 发起云渲染，再用 `task_status` 轮询任务状态。云渲染用于两类目标：创作中渲染中间结果核对预期；流程结束渲染最终成片并输出可直接播放的视频链接。
 * **音画同步**：如果需要，可以利用 `get_duration` 计算素材时长，精确对齐视频轨道与音频轨道。
 
 ## 环境变量配置
@@ -39,6 +40,7 @@ export VECTCUT_API_KEY="<your_token>"
 - `examples/`：curl 端到端示例
 - `prompts/`：请求路由与命令生成提示词
 - `references/`：端点参数与字段契约
+- `references/references.md`：References 总索引（端点文档、回包解读、样例入口）
 
 ## 执行路由
 
@@ -48,6 +50,8 @@ export VECTCUT_API_KEY="<your_token>"
    - 全局：`rules/rules.md`
    - 领域：`rules/<domain>_rules.md`
 2. 参数层（references）
+   - 总索引：`references/references.md`
+   - 端点总览：`references/endpoint_params.md`
    - 端点：`references/endpoints/<domain>.md`
    - 枚举：`references/enums/*.json`
 3. 提示层（prompts）
@@ -150,10 +154,12 @@ curl -X GET "http://open.vectcut.com/cut_jianying/get_transition_types" \
   -H "Authorization: Bearer $VECTCUT_API_KEY"
 ```
 
-### 4) 发起渲染并查询状态
+### 4) 云渲染（中间核验 + 最终交付）
 
-- `POST /generate_video`：对草稿 `draft_id` 发起渲染（返回 `task_id`）
-- `POST /task_status`：轮询 `task_id` 获取渲染进度与结果
+- `POST /generate_video`：对草稿 `draft_id` 发起云渲染（返回 `task_id`）。
+- `POST /task_status`：轮询 `task_id` 获取渲染进度与结果。
+- 创作过程中：可按关键里程碑发起渲染，核对当前画面、节奏、字幕与预期是否一致。
+- 任务结束时：必须轮询到完成态，并把结果中的可播放视频链接作为最终输出返回。
 
 ### 5. 典型场景示例
 
@@ -173,7 +179,7 @@ curl -X GET "http://open.vectcut.com/cut_jianying/get_transition_types" \
 
 #### 场景 B：素材混剪
 
-1) 创建草稿 → 2) add_video/add_audio/add_subtitle → 3) generate_video → 4) task_status 轮询
+1) 创建草稿 → 2) add_video/add_audio/add_subtitle → 3) generate_video 发起云渲染 → 4) task_status 轮询直到可取播放链接
 
 ```bash
 curl -X POST http://open.vectcut.com/cut_jianying/create_draft \
