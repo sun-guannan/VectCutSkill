@@ -25,5 +25,4 @@ echo "=== CURL DEMO: asr_basic (result.raw.result.utterances) ==="
 RES_BASIC="$("${ROOT}/scripts/asr_ops.sh" asr_basic "${PAYLOAD}")"
 echo "asr_basic => ${RES_BASIC}"
 
-echo "=== PYTHON DEMO ==="
-python3 "${ROOT}/examples/asr_ops_demo.py" "${URL_INPUT}" "${CONTENT_INPUT}"
+echo "=== DONE ==="

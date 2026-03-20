@@ -20,5 +20,4 @@ DETAIL_PAYLOAD="{\"video_url\":\"${URL_INPUT}\"}"
 CURL_RES_DETAIL="$("${ROOT}/scripts/material_ops.sh" video_detail "${DETAIL_PAYLOAD}")"
 echo "CURL video_detail => ${CURL_RES_DETAIL}"
 
-echo "=== PYTHON DEMO ==="
-python3 "${ROOT}/examples/material_ops_demo.py" "${URL_INPUT}"
+echo "=== DONE ==="

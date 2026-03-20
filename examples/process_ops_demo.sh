@@ -18,5 +18,4 @@ SPLIT_PAYLOAD="{\"video_url\":\"${VIDEO_URL}\",\"start\":${START},\"end\":${END}
 SPLIT_RES="$(${ROOT}/scripts/process_ops.sh split_video "${SPLIT_PAYLOAD}")"
 echo "split_video => ${SPLIT_RES}"
 
-echo "=== PYTHON DEMO ==="
-python3 "${ROOT}/examples/process_ops_demo.py" "${VIDEO_URL}" "${START}" "${END}"
+echo "=== DONE ==="

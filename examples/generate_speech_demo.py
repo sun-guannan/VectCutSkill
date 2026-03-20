@@ -33,6 +33,22 @@ def main():
     )
     print(f"GENERATE_SPEECH => {out.strip()}")
 
+    file_url = sys.argv[2] if len(sys.argv) > 2 else ""
+    if file_url:
+        clone_payload = {"file_url": file_url, "title": "demo_clone_voice"}
+        clone_out = subprocess.check_output(
+            [sys.executable, str(SCRIPT), "fish_clone", json.dumps(clone_payload, ensure_ascii=False)],
+            text=True,
+        )
+        print(f"FISH_CLONE => {clone_out.strip()}")
+
+    assets_payload = {"limit": 100, "offset": 0, "provider": "fish"}
+    assets_out = subprocess.check_output(
+        [sys.executable, str(SCRIPT), "voice_assets", json.dumps(assets_payload, ensure_ascii=False)],
+        text=True,
+    )
+    print(f"VOICE_ASSETS => {assets_out.strip()}")
+
 
 if __name__ == "__main__":
     main()

@@ -155,6 +155,8 @@ curl -X POST http://open.vectcut.com/cut_jianying/create_draft \
 - `/generate_image`：AI 文生图并添加到草稿
 - `/generate_ai_video`：AI 文生视频（异步任务）
 - `/generate_speech`：TTS 语音合成并添加到草稿
+- `/llm/tts/fish/clone_voice`：克隆音色并返回 `voice_id`（可用于后续 `generate_speech`）
+- `/llm/tts/voice_assets`：查询已克隆音色资产（支持 `provider=minimax|fish|NULL`）
 - `/remove_bg`：智能抠像（移除背景）并生成合成预设
 - `/search_sticker`：搜索在线贴纸素材
 

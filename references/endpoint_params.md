@@ -9,7 +9,7 @@
 - `endpoints/draft.md`：草稿管理端点（create_draft/modify_draft/remove_draft/query_script）
 - `endpoints/asr.md`：语音识别端点（asr_basic/asr_nlp/asr_llm）
 - `endpoints/generate_video.md`：云渲染端点（generate_video/task_status）
-- `endpoints/generate_speech.md`：语音合成端点（generate_speech）
+- `endpoints/generate_speech.md`：语音合成端点（generate_speech/fish_clone/voice_assets）
 - `endpoints/process.md`：预处理端点（extract_audio/split_video）
 
 ## 枚举文件
