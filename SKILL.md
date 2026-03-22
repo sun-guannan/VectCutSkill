@@ -1,6 +1,13 @@
 ---
 name: "vectcut-skill"
 description: "AI 视频导演与自动化剪辑专家。能够理解视频素材内容、视频创作指令，自主规划脚本结构，并通过调用 VectCut API 实现创建剪映草稿、编排素材（B-roll/转场/特效）、生成 AI 配音与字幕，实现端到端的视频创作流程。"
+homepage: "https://www.vectcut.com/"
+metadata:
+  openclaw:
+    emoji: "🎬"
+    requires:
+      env: ["VECTCUT_API_KEY"]
+    primaryEnv: "VECTCUT_API_KEY"
 dependency:
 ---
 
@@ -226,7 +233,6 @@ curl -X POST http://open.vectcut.com/cut_jianying/create_draft \
 - `/add_text`：添加文字（支持字体、描边、阴影、背景、动画、多样式范围等）
 - `/modify_text`：修改文字（基于 `material_id` 更新文案、时间段与样式）
 - `/remove_text`：删除文字（基于 `material_id` 删除文本素材）
-- `/add_subtitle`：添加字幕（SRT + 样式）
 - `/add_sticker`：添加贴纸
 - `/add_effect`：添加特效（scene/character）
 - `/add_filter`：添加滤镜
@@ -293,7 +299,7 @@ curl -X GET "http://open.vectcut.com/cut_jianying/get_transition_types" \
 
 #### 场景 B：素材混剪
 
-1) 创建草稿 → 2) add_video/add_audio/add_subtitle → 3) generate_video 发起云渲染 → 4) task_status 轮询直到可取播放链接
+1) 创建草稿 → 2) add_video/add_audio/add_text → 3) generate_video 发起云渲染 → 4) task_status 轮询直到可取播放链接
 
 ```bash
 curl -X POST http://open.vectcut.com/cut_jianying/create_draft \
@@ -308,13 +314,6 @@ curl -X POST http://open.vectcut.com/cut_jianying/add_video \
   -H "Authorization: Bearer $VECTCUT_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"draft_id":"xxx","video_url":"https://example.com/a.mp4","start":0,"end":10,"target_start":0}'
-```
-
-```bash
-curl -X POST http://open.vectcut.com/cut_jianying/add_subtitle \
-  -H "Authorization: Bearer $VECTCUT_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{"draft_id":"xxx","srt":"1\\n00:00:00,000 --> 00:00:02,000\\n你好\\n"}'
 ```
 
 发起渲染：
