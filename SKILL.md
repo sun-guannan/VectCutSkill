@@ -26,6 +26,7 @@ dependency:
 * **图片编排生命周期**：通过 `add_image` 添加图片素材，使用 `modify_image` 调整图片源、时间段、位置与动画，使用 `remove_image` 清理无效图片；动画与蒙版类型优先从枚举中选取，保证编排稳定性。
 * **视频编排生命周期**：通过 `add_video` 添加视频素材，使用 `modify_video` 调整素材源、裁切区间、位置与速度，使用 `remove_video` 清理无效视频；转场在片段首尾紧邻时生效，且需加在前一个元素上。
 * **AI 视频生成能力**：通过 `generate_ai_video` 调用聚合视频模型生成异步任务，再通过 `aivideo/task_status` 查询进度与视频结果；支持文生视频、图生视频与部分模型的首尾帧模式。
+* **数字人能力**：通过 `digital_human/create` 发起音频驱动数字人任务，再通过 `digital_human/task_status` 查询生成状态与结果。
 * **关键帧编排能力**：通过 `add_video_keyframe` 为文字、图片、视频设置位置、大小、透明度、旋转等关键帧，支持单点与批量关键帧写入。
 * **云渲染与结果核验**：通过 `generate_video` 发起云渲染，再用 `task_status` 轮询任务状态。云渲染用于两类目标：创作中渲染中间结果核对预期；流程结束渲染最终成片并输出可直接播放的视频链接。
 * **音画同步**：如果需要，可以利用 `get_duration` 计算素材时长，精确对齐视频轨道与音频轨道。
@@ -130,6 +131,18 @@ export VECTCUT_API_KEY="<your_token>"
   - generate：`task_id`
   - status：`status`、`progress`、`video_url`、`draft_id`、`draft_url`
 
+### 当前已落地能力域：digital_human
+- 规则：`rules/digital_human_rules.md`
+- 参数：`references/endpoints/digital_human.md`
+- 提示：`prompts/digital_human_ops.md`
+- 端点：`POST /cut_jianying/digital_human/create`、`GET /cut_jianying/digital_human/task_status`
+- 关键入参：
+  - create：`audio_url`、`video_url`
+  - status：`task_id`
+- 关键出参：
+  - create：`task_id` 或 `id`
+  - status：`status`、`progress`、`video_url`
+
 ### 当前已落地能力域：video
 - 规则：`rules/video_rules.md`
 - 参数：`references/endpoints/video.md`
@@ -172,7 +185,7 @@ export VECTCUT_API_KEY="<your_token>"
 - 关键出参：`output.added_keyframes_count`、`output.draft_id`、`output.draft_url`
 
 ### 新增能力域时的约定
-- 域命名统一使用小写下划线：`text` / `audio` / `subtitle` / `effect` / `keyframe`。
+- 域命名统一使用小写下划线：`text` / `audio` / `subtitle` / `effect` / `keyframe` / `digital_human`。
 - 根文件只维护“能力域索引”，端点细节只写在对应 `<domain>.md`。
 - 任意域新增端点时，只改该域文件，不改其他域。
 
@@ -227,6 +240,8 @@ curl -X POST http://open.vectcut.com/cut_jianying/create_draft \
 - `/generate_image`：AI 图片生成并添加到草稿（支持文生图/图生图，聚合模型：nano_banana_2、nano_banana_pro、jimeng-4.5）
 - `/generate_ai_video`：AI 视频生成（支持文生视频/图生视频/部分模型首尾帧，异步任务）
 - `/aivideo/task_status`：查询 AI 视频生成任务状态与视频结果
+- `/digital_human/create`：创建数字人口播任务（音频 + 视频输入）
+- `/digital_human/task_status`：查询数字人任务状态与结果
 - `/generate_speech`：TTS 语音合成并添加到草稿
 - `/llm/tts/fish/clone_voice`：克隆音色并返回 `voice_id`（可用于后续 `generate_speech`）
 - `/llm/tts/voice_assets`：查询已克隆音色资产（支持 `provider=minimax|fish|NULL`）

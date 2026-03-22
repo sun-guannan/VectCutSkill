@@ -12,6 +12,7 @@
 - `endpoints/generate_speech.md`：语音合成端点（generate_speech/fish_clone/voice_assets）
 - `endpoints/generate_ai_image.md`：AI 图片生成端点（generate_image）
 - `endpoints/generate_ai_video.md`：AI 视频生成端点（generate_ai_video/ai_video_task_status）
+- `endpoints/digital_human.md`：数字人端点（create_digital_human/digital_human_task_status）
 - `endpoints/video.md`：视频端点（add_video/modify_video/remove_video）
 - `endpoints/image.md`：图片端点（add_image/modify_image/remove_image）
 - `endpoints/text.md`：文本端点（add_text/modify_text/remove_text）
