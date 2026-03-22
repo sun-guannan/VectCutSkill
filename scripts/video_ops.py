@@ -10,6 +10,8 @@ API_KEY = os.getenv("VECTCUT_API_KEY", "")
 
 ACTION_ENDPOINT = {
     "add_video": "add_video",
+    "modify_video": "modify_video",
+    "remove_video": "remove_video",
 }
 
 def fail(error, output=None):
@@ -32,10 +34,20 @@ def parse_json_response(raw_text):
     except Exception:
         fail("Response is not valid JSON", {"raw_response": raw_text})
 
+def ensure_required_fields(endpoint, payload):
+    if endpoint == "add_video":
+        if not payload.get("video_url"):
+            fail("Missing required fields for add_video: video_url", {"payload": payload})
+    if endpoint in {"modify_video", "remove_video"}:
+        if not payload.get("draft_id") or not payload.get("material_id"):
+            fail(f"Missing required fields for {endpoint}: draft_id/material_id", {"payload": payload})
+
+
 def call_api(endpoint, payload):
     if not API_KEY:
         fail("VECTCUT_API_KEY is required")
 
+    ensure_required_fields(endpoint, payload)
     url = f"{BASE_URL.rstrip('/')}/{endpoint}"
     body = json.dumps(payload, ensure_ascii=False).encode('utf-8')
     req = urllib.request.Request(
@@ -78,14 +90,14 @@ def call_api(endpoint, payload):
 
 def main():
     if len(sys.argv) < 3:
-        print("Usage: video_ops.py <add_video> '<json_payload>'")
+        print("Usage: video_ops.py <add_video|modify_video|remove_video> '<json_payload>'")
         sys.exit(1)
 
     action = sys.argv[1]
     raw_payload = sys.argv[2]
     endpoint = ACTION_ENDPOINT.get(action)
     if not endpoint:
-        print("Usage: video_ops.py <add_video> '<json_payload>'")
+        print("Usage: video_ops.py <add_video|modify_video|remove_video> '<json_payload>'")
         sys.exit(1)
 
     payload = parse_payload(raw_payload)

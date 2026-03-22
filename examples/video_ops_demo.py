@@ -33,8 +33,37 @@ def main():
 
     print("=== DEMO CATEGORY: video ===")
 
-    payload = {}
-    run_action("add_video", payload)
+    payload = {
+        "video_url": "https://player.install-ai-guider.top/example/VID_20260120_211842.mp4",
+        "draft_id": draft_id,
+        "start": 0,
+        "end": 10,
+        "target_start": 0,
+        "track_name": "video_main"
+    }
+    add_raw = run_action("add_video", payload)
+    add_res = json.loads(add_raw)
+    material_id = ((add_res.get("output") or {}).get("material_id")) if isinstance(add_res, dict) else None
+    if not material_id:
+        print("No material_id, stop.")
+        sys.exit(1)
+
+    modify_payload = {
+        "draft_id": draft_id,
+        "material_id": material_id,
+        "video_url": "https://player.install-ai-guider.top/example/VID_20260120_211842.mp4",
+        "start": 0,
+        "end": 8,
+        "transform_x": 0.2,
+        "transform_y": 0.2,
+        "scale_x": 1.05,
+        "scale_y": 1.05,
+        "target_start": 1
+    }
+    run_action("modify_video", modify_payload)
+
+    remove_payload = {"draft_id": draft_id, "material_id": material_id}
+    run_action("remove_video", remove_payload)
 
 if __name__ == '__main__':
     main()

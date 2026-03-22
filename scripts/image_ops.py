@@ -18,6 +18,8 @@ MASK_TYPE_ENUM = Path(os.getenv("MASK_TYPE_ENUM", str(ROOT / "references/enums/m
 
 ACTION_ENDPOINT = {
     "add_image": "add_image",
+    "modify_image": "modify_image",
+    "remove_image": "remove_image",
 }
 
 
@@ -69,11 +71,24 @@ def known_error_hint(msg):
         return "时间片段冲突；可更换 track_name 或调整 start/end"
     return None
 
-def ensure_required_fields(payload):
-    if not payload.get("image_url"):
-        fail("Missing required fields for add_image: image_url", {"payload": payload})
+def ensure_required_fields(endpoint, payload):
+    if endpoint == "add_image":
+        if not payload.get("image_url"):
+            fail("Missing required fields for add_image: image_url", {"payload": payload})
+        return
+    if endpoint == "modify_image":
+        if not payload.get("draft_id") or not payload.get("material_id"):
+            fail("Missing required fields for modify_image: draft_id/material_id", {"payload": payload})
+        return
+    if endpoint == "remove_image":
+        if not payload.get("draft_id") or not payload.get("material_id"):
+            fail("Missing required fields for remove_image: draft_id/material_id", {"payload": payload})
+        return
 
-def ensure_image_enums_valid(payload):
+def ensure_image_enums_valid(endpoint, payload):
+    if endpoint == "remove_image":
+        return
+
     intro_animation = payload.get("intro_animation")
     outro_animation = payload.get("outro_animation")
     combo_animation = payload.get("combo_animation")
@@ -100,8 +115,8 @@ def call_api(endpoint, payload):
     if not API_KEY:
         fail("VECTCUT_API_KEY is required")
 
-    ensure_required_fields(payload)
-    ensure_image_enums_valid(payload)
+    ensure_required_fields(endpoint, payload)
+    ensure_image_enums_valid(endpoint, payload)
 
     url = f"{BASE_URL.rstrip('/')}/{endpoint}"
     body = json.dumps(payload, ensure_ascii=False).encode('utf-8')
@@ -153,14 +168,14 @@ def call_api(endpoint, payload):
 
 def main():
     if len(sys.argv) < 3:
-        print("Usage: image_ops.py <add_image> '<json_payload>'")
+        print("Usage: image_ops.py <add_image|modify_image|remove_image> '<json_payload>'")
         sys.exit(1)
 
     action = sys.argv[1]
     raw_payload = sys.argv[2]
     endpoint = ACTION_ENDPOINT.get(action)
     if not endpoint:
-        print("Usage: image_ops.py <add_image> '<json_payload>'")
+        print("Usage: image_ops.py <add_image|modify_image|remove_image> '<json_payload>'")
         sys.exit(1)
 
     payload = parse_payload(raw_payload)

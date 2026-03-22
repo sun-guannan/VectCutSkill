@@ -1,6 +1,6 @@
 # Endpoint Params
 
-## add_video
+## add_video / modify_video / remove_video
 
 - Method: `POST`
 - Path: `/cut_jianying/add_video`
@@ -28,8 +28,9 @@
 - `outro_animation` (string, optional): 出场动画名，用get_outro_animation_types查看支持的出场动画
 - `outro_animation_duration` (number, optional): 出场动画时间，单位秒
 - `duration` (number, optional): 原始素材的时长，单位秒，精确到小数点后6位。正确设置可以提升运行速度，但是设置错误可能带来不可预知的错误。
-- `transition` (string, optional): 转场动画，通过get_transition_types获取支持的转场动画
-- `transition_duration` (number, optional): 转场持续时间（秒，选填，默认0.5）
+- `transition` (string, optional): 转场动画，直接查 `references/enums/transition_types.json` 的 `items.name`。
+- `transition_duration` (number, optional): 转场持续时间（秒，选填，默认0.5）。
+- 转场生效条件：仅当两个相邻图片/视频片段首尾紧邻时生效（后一个 `target_start` - 前一个 `target_end` < `0.01`），且转场参数需要加在前一个元素上。
 - `volume` (number, optional): 音量（选填，单位db，默认0.0，-100表示静音）
 - `mask_type` (string, optional): 蒙版类型（选填，如圆形、矩形等）
 - `mask_center_x` (number, optional): 蒙版中心点坐标，0表示中心，0.5表示向右移动0.5个宽度
@@ -87,6 +88,57 @@ curl --location --request POST 'https://open.vectcut.com/cut_jianying/add_video'
 - `error`
 - `output`
 - `purchase_link`
-- `success`
 - `output.draft_id`
 - `output.draft_url`
+- `output.material_id`（add/modify 常见返回）
+
+## modify_video
+- Method: `POST`
+- Path: `/cut_jianying/modify_video`
+- 用途: `根据 material_id 修改视频素材`
+
+### 请求参数
+- 必填：`draft_id`、`material_id`
+- 常用：`video_url`、`start`、`end`、`transform_x`、`transform_y`、`scale_x`、`scale_y`、`speed`、`target_start`、`relative_index`、`volume`
+- 可选：`flip_horizontal`、`track_name`、`intro_animation`、`outro_animation`、`transition` 等
+
+### 示例请求
+```bash
+curl --location --request POST 'https://open.vectcut.com/cut_jianying/modify_video' \
+--header 'Authorization: Bearer  <token>' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+  "draft_id": "dfd_cat_1774145590_a398e5b3",
+  "material_id": "293a3b6e56414e96b51351d588b2e9f3",
+  "video_url": "https://player.install-ai-guider.top/example/VID_20260120_211842.mp4",
+  "start": 0,
+  "end": 10,
+  "transform_x": 0.6,
+  "transform_y": 0.6,
+  "scale_x": 1.1,
+  "scale_y": 1.1,
+  "speed": 1.0,
+  "target_start": 12,
+  "relative_index": 0,
+  "volume": 15.0
+}'
+```
+
+## remove_video
+- Method: `POST`
+- Path: `/cut_jianying/remove_video`
+- 用途: `根据 material_id 删除视频素材`
+
+### 请求参数
+- 必填：`material_id`、`draft_id`
+
+### 示例请求
+```bash
+curl --location --request POST 'https://open.vectcut.com/cut_jianying/remove_video' \
+--header 'Authorization: Bearer  <token>' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+  "material_id": "8822537f77424064bce925a830a602da",
+  "draft_id": "dfd_cat_1774145590_a398e5b3"
+}'
+```

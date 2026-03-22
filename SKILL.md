@@ -20,8 +20,13 @@ dependency:
 * **脚本规划**：根据主题（如“成语故事”、“产品评测”）自动拆解分镜，确定各片段时长。
 * **草稿生命周期管理**：先创建并维护草稿，再进入编排流程；优先调用 `create_draft` 初始化草稿，按需使用 `modify_draft` 修改草稿名/封面，任务异常或清理阶段使用 `remove_draft` 删除草稿。
 * **反思自查**：在关键步骤后调用 `query_script` 回看当前草稿结构，核对轨道、素材与时间段是否符合预期；若不一致，先定位问题再执行修正操作。
-* **视觉编排**：基于已创建草稿自主选择并添加转场（Transitions）、特效（Effects）和滤镜（Filters）。
-* **AI 资源补全**：当素材不足时，主动调用 `generate_image`，`generate_speech` 或 `generate_ai_video` 生成 B-roll 填充；其中 `generate_speech` 通过 `text + provider + model + voice_id` 合成配音，可配合 `volume`、`target_start`、`effect_type/effect_params` 控制入轨位置与音色效果。
+* **视觉编排**：基于已创建草稿自主选择并添加转场（Transitions）、特效（Effects）、滤镜（Filters）和文本（Text）。
+* **AI 资源补全**：当素材不足时，主动调用 `generate_image`、`generate_speech` 或 `generate_ai_video` 生成 B-roll 填充；其中 `generate_image` 支持 `nano_banana_2`、`nano_banana_pro`、`jimeng-4.5` 等聚合模型，`generate_speech` 通过 `text + provider + model + voice_id` 合成配音，可配合 `volume`、`target_start`、`effect_type/effect_params` 控制入轨位置与音色效果。
+* **文本编排生命周期**：通过 `add_text` 创建文本素材，使用 `modify_text` 调整文案与样式，使用 `remove_text` 清理无效文本；文本动画、字体与局部样式优先从枚举中选取，保证可用性与一致性。
+* **图片编排生命周期**：通过 `add_image` 添加图片素材，使用 `modify_image` 调整图片源、时间段、位置与动画，使用 `remove_image` 清理无效图片；动画与蒙版类型优先从枚举中选取，保证编排稳定性。
+* **视频编排生命周期**：通过 `add_video` 添加视频素材，使用 `modify_video` 调整素材源、裁切区间、位置与速度，使用 `remove_video` 清理无效视频；转场在片段首尾紧邻时生效，且需加在前一个元素上。
+* **AI 视频生成能力**：通过 `generate_ai_video` 调用聚合视频模型生成异步任务，再通过 `aivideo/task_status` 查询进度与视频结果；支持文生视频、图生视频与部分模型的首尾帧模式。
+* **关键帧编排能力**：通过 `add_video_keyframe` 为文字、图片、视频设置位置、大小、透明度、旋转等关键帧，支持单点与批量关键帧写入。
 * **云渲染与结果核验**：通过 `generate_video` 发起云渲染，再用 `task_status` 轮询任务状态。云渲染用于两类目标：创作中渲染中间结果核对预期；流程结束渲染最终成片并输出可直接播放的视频链接。
 * **音画同步**：如果需要，可以利用 `get_duration` 计算素材时长，精确对齐视频轨道与音频轨道。
 * **音视频预处理工具**：在编排前可优先使用基础处理端点清洗素材。`extract_audio` 可从视频中提取音频（`POST /process/extract_audio`，入参 `video_url`）；`split_video` 可按时间段切分视频或音频（`POST /process/split_video`，入参 `video_url`、`start`、`end`）。适用于替换现有视频 B-roll、素材混剪、先切段再入草稿等场景。
@@ -105,6 +110,67 @@ export VECTCUT_API_KEY="<your_token>"
 - 关键入参：`text`、`provider`、`model`、`voice_id`、`volume`、`target_start`、`effect_type`、`effect_params`
 - 关键出参：`audio_url`、`draft_id`、`draft_url`、`material_id`
 
+### 当前已落地能力域：generate_ai_image
+- 规则：`rules/generate_ai_image_rules.md`
+- 参数：`references/endpoints/generate_ai_image.md`
+- 提示：`prompts/generate_ai_image_ops.md`
+- 端点：`POST /cut_jianying/generate_image`
+- 关键入参：`prompt`、`model`、`reference_image`、`size`、`draft_id`
+- 关键出参：`output.image_url`、`output.draft_id`、`output.draft_url`
+
+### 当前已落地能力域：generate_ai_video
+- 规则：`rules/generate_ai_video_rules.md`
+- 参数：`references/endpoints/generate_ai_video.md`
+- 提示：`prompts/generate_ai_video_ops.md`
+- 端点：`POST /cut_jianying/generate_ai_video`、`GET /cut_jianying/aivideo/task_status`
+- 关键入参：
+  - generate：`prompt`、`model`、`resolution`
+  - status：`task_id`
+- 关键出参：
+  - generate：`task_id`
+  - status：`status`、`progress`、`video_url`、`draft_id`、`draft_url`
+
+### 当前已落地能力域：video
+- 规则：`rules/video_rules.md`
+- 参数：`references/endpoints/video.md`
+- 提示：`prompts/video_ops.md`
+- 端点：`POST /cut_jianying/add_video`、`POST /cut_jianying/modify_video`、`POST /cut_jianying/remove_video`
+- 关键入参：
+  - add：`video_url`
+  - modify/remove：`draft_id`、`material_id`
+- 关键出参：`output.draft_id`、`output.draft_url`、`output.material_id`（add/modify）
+
+### 当前已落地能力域：image
+- 规则：`rules/image_rules.md`
+- 参数：`references/endpoints/image.md`
+- 提示：`prompts/image_ops.md`
+- 端点：`POST /cut_jianying/add_image`、`POST /cut_jianying/modify_image`、`POST /cut_jianying/remove_image`
+- 关键入参：
+  - add：`image_url`
+  - modify/remove：`draft_id`、`material_id`
+- 关键出参：`output.draft_id`、`output.draft_url`、`output.material_id`（add/modify）
+
+### 当前已落地能力域：text
+- 规则：`rules/text_rules.md`
+- 参数：`references/endpoints/text.md`
+- 提示：`prompts/text_ops.md`
+- 端点：`POST /cut_jianying/add_text`、`POST /cut_jianying/modify_text`、`POST /cut_jianying/remove_text`
+- 关键入参：
+  - add：`text`、`start`、`end`
+  - modify：`draft_id`、`material_id`、`text`、`start`、`end`
+  - remove：`draft_id`、`material_id`
+- 关键出参：
+  - add：`output.material_id`
+  - modify/remove：`output.draft_id`、`output.draft_url`
+
+### 当前已落地能力域：keyframe
+- 规则：`rules/keyframe_rules.md`
+- 参数：`references/endpoints/keyframe.md`
+- 提示：`prompts/keyframe_ops.md`
+- 端点：`POST /cut_jianying/add_video_keyframe`
+- 关键入参：`draft_id`、`track_name`、`property_types`、`times`、`values`
+- 关键出参：`output.added_keyframes_count`、`output.draft_id`、`output.draft_url`
+
 ### 新增能力域时的约定
 - 域命名统一使用小写下划线：`text` / `audio` / `subtitle` / `effect` / `keyframe`。
 - 根文件只维护“能力域索引”，端点细节只写在对应 `<domain>.md`。
@@ -138,22 +204,29 @@ curl -X POST http://open.vectcut.com/cut_jianying/create_draft \
 你可以按需组合以下操作（都为 `POST` JSON）：
 
 - `/add_video`：添加视频（支持裁切、速度、变换、蒙版、混合、转场等）
+- `/modify_video`：修改视频（基于 `material_id` 更新视频源、裁切区间、位置与速度）
+- `/remove_video`：删除视频（基于 `material_id` 删除视频素材）
 - `/add_image`：添加图片（支持入/出场动画、转场、蒙版、混合等）
+- `/modify_image`：修改图片（基于 `material_id` 更新图片源、时长、位置、动画与样式）
+- `/remove_image`：删除图片（基于 `material_id` 删除图片素材）
 - `/add_audio`：添加音频（支持音量、变速、淡入淡出、音效等）
 - `/add_text`：添加文字（支持字体、描边、阴影、背景、动画、多样式范围等）
+- `/modify_text`：修改文字（基于 `material_id` 更新文案、时间段与样式）
+- `/remove_text`：删除文字（基于 `material_id` 删除文本素材）
 - `/add_subtitle`：添加字幕（SRT + 样式）
 - `/add_sticker`：添加贴纸
 - `/add_effect`：添加特效（scene/character）
 - `/add_filter`：添加滤镜
-- `/add_video_keyframe`：添加关键帧（如透明度等）
+- `/add_video_keyframe`：添加关键帧（支持位置、大小、透明度、旋转等属性）
 - `/get_video_scene_effect_types`：获取场景特效（用于 effect_category=scene）
 - `/get_video_character_effect_types`：获取人物特效（用于 effect_category=character）
 - `/get_filter_types`：添加滤镜
 
 ### 3) 高级能力（AI 与搜索）
 
-- `/generate_image`：AI 文生图并添加到草稿
-- `/generate_ai_video`：AI 文生视频（异步任务）
+- `/generate_image`：AI 图片生成并添加到草稿（支持文生图/图生图，聚合模型：nano_banana_2、nano_banana_pro、jimeng-4.5）
+- `/generate_ai_video`：AI 视频生成（支持文生视频/图生视频/部分模型首尾帧，异步任务）
+- `/aivideo/task_status`：查询 AI 视频生成任务状态与视频结果
 - `/generate_speech`：TTS 语音合成并添加到草稿
 - `/llm/tts/fish/clone_voice`：克隆音色并返回 `voice_id`（可用于后续 `generate_speech`）
 - `/llm/tts/voice_assets`：查询已克隆音色资产（支持 `provider=minimax|fish|NULL`）

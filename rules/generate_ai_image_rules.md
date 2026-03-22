@@ -1,9 +1,14 @@
-# video 端点规则（add_video/modify_video/remove_video）
+# generate_ai_image 端点规则（generate_image）
 
 ## 适用范围
-- `POST /cut_jianying/add_video`
-- `POST /cut_jianying/modify_video`
-- `POST /cut_jianying/remove_video`
+- `POST /cut_jianying/generate_image`
+
+## 请求路由与参数策略
+- 必填：`prompt`、`model`。
+- `model` 建议值：`nano_banana_2`、`nano_banana_pro`、`jimeng-4.5`（兼容 `nano_banana`）。
+- `size` 建议传入 `宽x高` 格式并与模型支持分辨率匹配。
+- 图生图场景传 `reference_image`；文生图场景可不传。
+- 入草稿场景建议传 `draft_id`、`start`、`end`、`track_name`。
 
 ## 专属异常处理
 - 当 HTTP 状态码非 2xx：
@@ -17,15 +22,13 @@
   - 重试上限：0 次。
 
 - 当 `success=false` 或 `error` 非空：
-  - 含义：业务失败（如鉴权失败、资源不可访问、参数不合法）。
+  - 含义：业务失败（如模型不支持、分辨率不支持、资源不可访问）。
   - 处理：保留 `error` 与关键入参，修正后重试 1 次。
   - 重试上限：1 次。
 
 - 当关键字段缺失：
-  - `add_video` 缺少 `output.draft_id` 或 `output.draft_url`。
-  - `modify_video` 缺少 `output.draft_id` 或 `output.draft_url`。
-  - `remove_video` 缺少 `output.draft_id` 或 `output.draft_url`。
-  - 含义：关键字段缺失，无法进入后续编排。
+  - 缺少 `output.image_url`。
+  - 含义：生成图片结果不可用。
   - 处理：标记为不可继续，要求修正入参或稍后重试。
   - 重试上限：1 次。
 
@@ -35,6 +38,7 @@
 - `error`
 - `status_code`
 - `raw_response`
-- `url`
+- `prompt`
+- `model`
+- `size`
 - `draft_id`
-- `material_id`

@@ -11,7 +11,7 @@ COMBO_ANIMATION_ENUM="${COMBO_ANIMATION_ENUM:-${ROOT}/references/enums/combo_ani
 MASK_TYPE_ENUM="${MASK_TYPE_ENUM:-${ROOT}/references/enums/mask_types.json}"
 
 usage() {
-  echo "Usage: $0 <add_image> '<json_payload>'"
+  echo "Usage: $0 <add_image|modify_image|remove_image> '<json_payload>'"
   exit 1
 }
 
@@ -28,17 +28,28 @@ json_get() {
 
 case "$ACTION" in
   add_image) ENDPOINT="add_image" ;;
+  modify_image) ENDPOINT="modify_image" ;;
+  remove_image) ENDPOINT="remove_image" ;;
   *) usage ;;
 esac
 
-IMAGE_URL="$(json_get image_url "$PAYLOAD")"
-[[ -z "$IMAGE_URL" ]] && echo '{"success":false,"error":"Missing required fields for add_image: image_url","output":""}' && exit 0
-
-intro_animation="$(json_get intro_animation "$PAYLOAD")"
-if [[ -n "$intro_animation" ]] && ! grep -Fq "\"name\": \"${intro_animation}\"" "$INTRO_ANIMATION_ENUM"; then
-  echo "{\"success\":false,\"error\":\"Unknown intro animation: ${intro_animation}\",\"output\":\"\",\"hint\":\"检查 references/enums/intro_animation_types.json\"}"
-  exit 0
+if [[ "$ACTION" == "add_image" ]]; then
+  IMAGE_URL="$(json_get image_url "$PAYLOAD")"
+  [[ -z "$IMAGE_URL" ]] && echo '{"success":false,"error":"Missing required fields for add_image: image_url","output":""}' && exit 0
 fi
+
+if [[ "$ACTION" == "modify_image" || "$ACTION" == "remove_image" ]]; then
+  DRAFT_ID="$(json_get draft_id "$PAYLOAD")"
+  MATERIAL_ID="$(json_get material_id "$PAYLOAD")"
+  [[ -z "$DRAFT_ID" || -z "$MATERIAL_ID" ]] && echo "{\"success\":false,\"error\":\"Missing required fields for ${ACTION}: draft_id/material_id\",\"output\":\"\"}" && exit 0
+fi
+
+if [[ "$ACTION" != "remove_image" ]]; then
+  intro_animation="$(json_get intro_animation "$PAYLOAD")"
+  if [[ -n "$intro_animation" ]] && ! grep -Fq "\"name\": \"${intro_animation}\"" "$INTRO_ANIMATION_ENUM"; then
+    echo "{\"success\":false,\"error\":\"Unknown intro animation: ${intro_animation}\",\"output\":\"\",\"hint\":\"检查 references/enums/intro_animation_types.json\"}"
+    exit 0
+  fi
 
 outro_animation="$(json_get outro_animation "$PAYLOAD")"
 if [[ -n "$outro_animation" ]] && ! grep -Fq "\"name\": \"${outro_animation}\"" "$OUTRO_ANIMATION_ENUM"; then
@@ -52,10 +63,11 @@ if [[ -n "$combo_animation" ]] && ! grep -Fq "\"name\": \"${combo_animation}\"" 
   exit 0
 fi
 
-mask_type="$(json_get mask_type "$PAYLOAD")"
-if [[ -n "$mask_type" ]] && ! grep -Fq "\"name\": \"${mask_type}\"" "$MASK_TYPE_ENUM"; then
-  echo "{\"success\":false,\"error\":\"Unknown mask type: ${mask_type}\",\"output\":\"\",\"hint\":\"检查 references/enums/mask_types.json\"}"
-  exit 0
+  mask_type="$(json_get mask_type "$PAYLOAD")"
+  if [[ -n "$mask_type" ]] && ! grep -Fq "\"name\": \"${mask_type}\"" "$MASK_TYPE_ENUM"; then
+    echo "{\"success\":false,\"error\":\"Unknown mask type: ${mask_type}\",\"output\":\"\",\"hint\":\"检查 references/enums/mask_types.json\"}"
+    exit 0
+  fi
 fi
 
 curl --silent --show-error --location --request POST "${BASE_URL}/${ENDPOINT}" \

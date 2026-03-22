@@ -84,7 +84,7 @@ def main():
     mask_type = random.choice(mask_types)
     print(f"Use mask_type: {mask_type}")
 
-    payload = {
+    add_payload = {
         "image_url": "https://pic1.imgdb.cn/item/68ba8fc058cb8da5c8801ab0.png",
         "start": 0,
         "end": 5,
@@ -113,7 +113,30 @@ def main():
         "mask_rect_width": 8,
         "mask_round_corner": 10
     }
-    run_action("add_image", payload)
+    add_res = run_action("add_image", add_payload)
+    material_id = ((add_res.get("output") or {}).get("material_id")) if isinstance(add_res, dict) else None
+    if not material_id:
+        print("No material_id, stop.")
+        sys.exit(1)
+
+    modify_payload = {
+        "material_id": material_id,
+        "draft_id": draft_id,
+        "image_url": "https://pic1.imgdb.cn/item/68ba8fc058cb8da5c8801ab0.png",
+        "start": 1,
+        "end": 4.5,
+        "scale_x": 0.9,
+        "scale_y": 0.9,
+        "transform_x": 0.1,
+        "transform_y": 0.1,
+        "outro_animation": outro_animation_type,
+        "alpha": 0.85,
+        "rotation": 10
+    }
+    run_action("modify_image", modify_payload)
+
+    remove_payload = {"draft_id": draft_id, "material_id": material_id}
+    run_action("remove_image", remove_payload)
 
 
 if __name__ == "__main__":

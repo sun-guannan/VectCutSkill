@@ -1,7 +1,9 @@
-# image 端点规则（add_image）
+# image 端点规则（add_image/modify_image/remove_image）
 
 ## 适用范围
 - `POST /cut_jianying/add_image`
+- `POST /cut_jianying/modify_image`
+- `POST /cut_jianying/remove_image`
 
 ## 专属异常处理
 - 当 `error` 包含 `Unknown intro animation` / `intro_animation` 非法：
@@ -41,6 +43,8 @@
 
 - 当关键字段缺失：
   - `add_image` 缺少 `output.draft_id` 或 `output.draft_url`。
+  - `modify_image` 缺少 `output.draft_id` 或 `output.draft_url`。
+  - `remove_image` 缺少 `output.draft_id` 或 `output.draft_url`。
   - 含义：关键字段缺失，无法进入后续编排。
   - 处理：标记为不可继续，要求修正入参或稍后重试。
   - 重试上限：1 次。
@@ -52,6 +56,7 @@
 - `status_code`
 - `raw_response`
 - `draft_id`
+- `material_id`
 - `image_url`
 - `intro_animation`
 - `outro_animation`

@@ -9,6 +9,12 @@
 - `endpoints/asr.md`：语音识别端点明细（asr_basic/asr_nlp/asr_llm）
 - `endpoints/generate_video.md`：云渲染端点明细（generate_video/task_status）
 - `endpoints/generate_speech.md`：语音合成端点明细（generate_speech/fish_clone/voice_assets）
+- `endpoints/generate_ai_image.md`：AI 图片生成端点明细（generate_image）
+- `endpoints/generate_ai_video.md`：AI 视频生成端点明细（generate_ai_video/ai_video_task_status）
+- `endpoints/video.md`：视频端点明细（add_video/modify_video/remove_video）
+- `endpoints/image.md`：图片端点明细（add_image/modify_image/remove_image）
+- `endpoints/text.md`：文本端点明细（add_text/modify_text/remove_text）
+- `endpoints/keyframe.md`：关键帧端点明细（add_video_keyframe）
 - `endpoints/process.md`：预处理端点明细（extract_audio/split_video）
 
 ## Enums
@@ -19,6 +25,10 @@
 - `enums/azure_voiceids.json`：Azure 音色枚举
 - `enums/volc_voiceids.json`：Volc 音色枚举
 - `enums/fish_voiceids.json`：Fish 音色枚举
+- `enums/font_types.json`：字体枚举
+- `enums/text_intro_anims.json`：文字入场动画枚举
+- `enums/text_outro_anims.json`：文字出场动画枚举
+- `enums/text_loop_anims.json`：文字循环动画枚举
 
 ## Draft Query 解析
 - `draft_query_notes.md`：`query_script` 返回 `output` 的结构解读（总体配置、materials、ID 关联、轨道、关键帧）

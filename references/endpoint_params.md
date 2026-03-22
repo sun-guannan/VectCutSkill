@@ -10,6 +10,12 @@
 - `endpoints/asr.md`：语音识别端点（asr_basic/asr_nlp/asr_llm）
 - `endpoints/generate_video.md`：云渲染端点（generate_video/task_status）
 - `endpoints/generate_speech.md`：语音合成端点（generate_speech/fish_clone/voice_assets）
+- `endpoints/generate_ai_image.md`：AI 图片生成端点（generate_image）
+- `endpoints/generate_ai_video.md`：AI 视频生成端点（generate_ai_video/ai_video_task_status）
+- `endpoints/video.md`：视频端点（add_video/modify_video/remove_video）
+- `endpoints/image.md`：图片端点（add_image/modify_image/remove_image）
+- `endpoints/text.md`：文本端点（add_text/modify_text/remove_text）
+- `endpoints/keyframe.md`：关键帧端点（add_video_keyframe）
 - `endpoints/process.md`：预处理端点（extract_audio/split_video）
 
 ## 枚举文件
@@ -20,6 +26,10 @@
 - `enums/azure_voiceids.json`：`provider=azure` 的 `voice_id` 可选值
 - `enums/volc_voiceids.json`：`provider=volc` 的 `voice_id` 可选值
 - `enums/fish_voiceids.json`：`provider=fish` 的 `voice_id` 可选值
+- `enums/font_types.json`：`add_text.font` 可选值
+- `enums/text_intro_anims.json`：`add_text.intro_animation` 可选值
+- `enums/text_outro_anims.json`：`add_text.outro_animation` 可选值
+- `enums/text_loop_anims.json`：`add_text.loop_animation` 可选值
 
 ## Query Script 输出解析
 - `query_script` 的 `output` 为草稿结构体解析入口。

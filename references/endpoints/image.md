@@ -42,8 +42,9 @@
 - `outro_animation_duration` (number, optional): 出场动画时间，单位秒
 - `combo_animation` (string, optional): 组合动画名
 - `combo_animation_duration` (number, optional): 组合动画时间，单位秒
-- `transition` (string, optional): 转场动画，利用get_transition_types查看支持的转场动画
-- `transition_duration` (number, optional): 转场动画持续时间，单位秒
+- `transition` (string, optional): 转场动画，直接查 `references/enums/transition_types.json` 的 `items.name`。
+- `transition_duration` (number, optional): 转场动画持续时间，单位秒。
+- 转场生效条件：仅当两个相邻图片/视频片段首尾紧邻时生效（后一个 `target_start` - 前一个 `target_end` < `0.01`），且转场参数需要加在前一个元素上。
 - `mask_type` (string, optional): 蒙版类型，例如“矩形”
 - `mask_center_x` (number, optional): 蒙版中心点坐标，0表示中心，0.5表示向右移动0.5个宽度
 - `mask_center_y` (number, optional): 蒙版中心点坐标，0表示中心，0.5表示向下移动0.5个高度
@@ -103,3 +104,58 @@ curl --location --request POST 'https://open.vectcut.com/cut_jianying/add_image'
 - `purchase_link`
 - `output.draft_id`
 - `output.draft_url`
+- `output.material_id`（常见于 add/modify）
+
+## modify_image
+- Method: `POST`
+- Path: `/cut_jianying/modify_image`
+- 用途: `根据 material_id 修改图片素材（可更新图片源、时长、位置、动画、透明度、旋转等）`
+
+### 请求参数
+- 必填：`draft_id`、`material_id`
+- 常用：`image_url`、`start`、`end`、`scale_x`、`scale_y`、`transform_x_px`、`transform_y_px`、`track_name`、`relative_index`
+- 动画：`intro_animation`、`intro_animation_duration`、`outro_animation`、`outro_animation_duration`、`transition`
+- 其他：`alpha`、`rotation`
+
+### 示例请求
+```bash
+curl --location --request POST 'https://open.vectcut.com/cut_jianying/modify_image' \
+--header 'Authorization: Bearer  <token>' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+  "material_id": "3a6a87bf72cf4014b808edc269865f83",
+  "draft_id": "dfd_cat_1774083194_49b60636",
+  "image_url": "https://example.com/new.png",
+  "start": 15.3,
+  "end": 25.2,
+  "scale_x": 0.7,
+  "scale_y": 0.7,
+  "transform_x_px": 470,
+  "transform_y_px": 490,
+  "track_name": "test_mmain1",
+  "relative_index": 63,
+  "outro_animation": "缩小",
+  "outro_animation_duration": 2,
+  "alpha": 0.55,
+  "rotation": 44
+}'
+```
+
+## remove_image
+- Method: `POST`
+- Path: `/cut_jianying/remove_image`
+- 用途: `根据 material_id 删除图片素材`
+
+### 请求参数
+- 必填：`draft_id`、`material_id`
+
+### 示例请求
+```bash
+curl --location --request POST 'https://open.vectcut.com/cut_jianying/remove_image' \
+--header 'Authorization: Bearer  <token>' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+  "material_id": "b6746268cdbb46a1859bde7d9abad58a",
+  "draft_id": "dfd_cat_1774083194_49b60636"
+}'
+```
