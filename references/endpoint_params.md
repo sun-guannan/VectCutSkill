@@ -10,7 +10,7 @@
 - `endpoints/asr.md`：语音识别端点（asr_basic/asr_nlp/asr_llm）
 - `endpoints/generate_video.md`：云渲染端点（generate_video/task_status）
 - `endpoints/generate_speech.md`：语音合成端点（tts_generate/fish_clone/voice_assets）
-- `endpoints/generate_ai_image.md`：AI 图片生成端点（generate_image）
+- `endpoints/generate_ai_image.md`：AI 图片生成端点（llm_image_generate）
 - `endpoints/generate_ai_video.md`：AI 视频生成端点（generate_ai_video/ai_video_task_status）
 - `endpoints/digital_human.md`：数字人端点（create_digital_human/digital_human_task_status）
 - `endpoints/video.md`：视频端点（add_video/modify_video/remove_video）

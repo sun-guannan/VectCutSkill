@@ -28,7 +28,7 @@ dependency:
 * **草稿生命周期管理**：先创建并维护草稿，再进入编排流程；优先调用 `create_draft` 初始化草稿，按需使用 `modify_draft` 修改草稿名/封面，任务异常或清理阶段使用 `remove_draft` 删除草稿。
 * **反思自查**：在关键步骤后调用 `query_script` 回看当前草稿结构，核对轨道、素材与时间段是否符合预期；若不一致，先定位问题再执行修正操作。
 * **视觉编排**：基于已创建草稿自主选择并添加转场（Transitions）、特效（Effects）、滤镜（Filters）和文本（Text）。
-* **AI 资源补全**：当素材不足时，主动调用 `generate_image`、`tts_generate` 或 `generate_ai_video` 生成 B-roll 填充；其中 `generate_image` 支持 `nano_banana_2`、`nano_banana_pro`、`jimeng-4.5` 等聚合模型，`tts_generate` 通过 `provider + text + voice_id + model` 合成配音并返回可复用音频 URL。
+* **AI 资源补全**：当素材不足时，主动调用 `generate_image`、`tts_generate` 或 `generate_ai_video` 生成 B-roll 填充；其中 `generate_image` 通过 `prompt + model + size + reference_image` 生成图片并返回可复用图片 URL，`tts_generate` 通过 `provider + text + voice_id + model` 合成配音并返回可复用音频 URL。
 * **文本编排生命周期**：通过 `add_text` 创建文本素材，使用 `modify_text` 调整文案与样式，使用 `remove_text` 清理无效文本；文本动画、字体与局部样式优先从枚举中选取，保证可用性与一致性。
 * **图片编排生命周期**：通过 `add_image` 添加图片素材，使用 `modify_image` 调整图片源、时间段、位置与动画，使用 `remove_image` 清理无效图片；动画与蒙版类型优先从枚举中选取，保证编排稳定性。
 * **视频编排生命周期**：通过 `add_video` 添加视频素材，使用 `modify_video` 调整素材源、裁切区间、位置与速度，使用 `remove_video` 清理无效视频；转场在片段首尾紧邻时生效，且需加在前一个元素上。
@@ -122,9 +122,9 @@ export VECTCUT_API_KEY="<your_token>"
 - 规则：`rules/generate_ai_image_rules.md`
 - 参数：`references/endpoints/generate_ai_image.md`
 - 提示：`prompts/generate_ai_image_ops.md`
-- 端点：`POST /cut_jianying/generate_image`
-- 关键入参：`prompt`、`model`、`reference_image`、`size`、`draft_id`
-- 关键出参：`output.image_url`、`output.draft_id`、`output.draft_url`
+- 端点：`POST /llm/image/generate`
+- 关键入参：`prompt`、`model`、`size`、`reference_image`
+- 关键出参：`image`、`error`
 
 ### 当前已落地能力域：generate_ai_video
 - 规则：`rules/generate_ai_video_rules.md`
@@ -243,7 +243,7 @@ curl -X POST http://open.vectcut.com/cut_jianying/create_draft \
 
 ### 3) 高级能力（AI 与搜索）
 
-- `/generate_image`：AI 图片生成并添加到草稿（支持文生图/图生图，聚合模型：nano_banana_2、nano_banana_pro、jimeng-4.5）
+- `/llm/image/generate`：AI 图片生成（支持文生图/图生图，聚合模型：nano_banana_2、nano_banana_pro、jimeng-4.5）
 - `/generate_ai_video`：AI 视频生成（支持文生视频/图生视频/部分模型首尾帧，异步任务）
 - `/aivideo/task_status`：查询 AI 视频生成任务状态与视频结果
 - `/digital_human/create`：创建数字人口播任务（音频 + 视频输入）
@@ -289,10 +289,10 @@ curl -X GET "http://open.vectcut.com/cut_jianying/get_transition_types" \
 
 1.  **分镜拆解**：将故事拆分为 N 个片段（图片 Prompt + 旁白文本）。
 2.  **生成循环**（对每个片段）：
-    *   调用 `generate_image` 生成插图，获得 `image_url`。
+    *   调用 `generate_image` 生成插图，获得 `image`（图片地址）。
     *   调用 `tts_generate` 生成配音，获得 `url`（音频地址）。
     *   **关键点**：调用 `get_duration(url=url)` 获取配音时长 `duration`。
-    *   调用 `add_image`，将 `image_url` 加入草稿，并设置 `duration` 等于配音时长，确保音画同步。
+    *   调用 `add_image`，将 `image` 加入草稿，并设置 `duration` 等于配音时长，确保音画同步。
     *   调用 `add_audio` 将 `url` 加入草稿音轨。
 
 参考 Prompt 模板：`assets/prompts/story_creation_zh.md`

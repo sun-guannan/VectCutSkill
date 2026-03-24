@@ -6,9 +6,9 @@ import sys
 import urllib.error
 import urllib.request
 
-BASE_URL = os.getenv("VECTCUT_BASE_URL", "https://open.vectcut.com/cut_jianying")
+LLM_BASE_URL = os.getenv("VECTCUT_LLM_BASE_URL", "https://open.vectcut.com/llm")
 API_KEY = os.getenv("VECTCUT_API_KEY", "")
-ALLOWED_MODELS = {"nano_banana", "nano_banana_2", "nano_banana_pro", "jimeng-4.5"}
+ALLOWED_MODELS = {"nano_banana_2", "nano_banana_pro", "jimeng-4.5"}
 SIZE_RE = re.compile(r"^\d+x\d+$")
 
 
@@ -29,11 +29,12 @@ def parse_payload(raw):
 
 def validate_payload(payload):
     prompt = payload.get("prompt")
-    model = payload.get("model")
     if not isinstance(prompt, str) or not prompt.strip():
         fail("prompt is required")
-    if not isinstance(model, str) or model not in ALLOWED_MODELS:
-        fail("model must be one of: nano_banana, nano_banana_2, nano_banana_pro, jimeng-4.5")
+    if "model" in payload:
+        model = payload.get("model")
+        if not isinstance(model, str) or model not in ALLOWED_MODELS:
+            fail("model must be one of: nano_banana_2, nano_banana_pro, jimeng-4.5")
     if "size" in payload:
         size = payload.get("size")
         if not isinstance(size, str) or not SIZE_RE.match(size):
@@ -42,18 +43,13 @@ def validate_payload(payload):
         ref = payload.get("reference_image")
         if not isinstance(ref, str) or not (ref.startswith("http://") or ref.startswith("https://")):
             fail("reference_image must start with http:// or https://")
-    for key in ["start", "end", "transform_x", "transform_y", "scale_x", "scale_y"]:
-        if key in payload and not isinstance(payload.get(key), (int, float)):
-            fail(f"{key} must be a number")
-    if "start" in payload and "end" in payload and payload["end"] <= payload["start"]:
-        fail("invalid range: require end > start")
 
 
 def request_post(payload):
     if not API_KEY:
         fail("VECTCUT_API_KEY is required")
     req = urllib.request.Request(
-        url=f"{BASE_URL.rstrip('/')}/generate_image",
+        url=f"{LLM_BASE_URL.rstrip('/')}/image/generate",
         data=json.dumps(payload, ensure_ascii=False).encode("utf-8"),
         method="POST",
         headers={"Authorization": f"Bearer {API_KEY}", "Content-Type": "application/json"},
@@ -75,12 +71,10 @@ def request_post(payload):
     except Exception:
         fail("Response is not valid JSON", {"raw_response": text})
 
-    if data.get("success") is False or (isinstance(data.get("error"), str) and data.get("error").strip()):
-        fail(data.get("error") or "Business error", data.get("output") if data.get("output") is not None else data)
-
-    output = data.get("output") if isinstance(data.get("output"), dict) else {}
-    if not output.get("image_url"):
-        fail("Missing key field: output.image_url", {"response": data})
+    if isinstance(data.get("error"), str) and data.get("error").strip():
+        fail(data.get("error"), data)
+    if not isinstance(data.get("image"), str) or not data.get("image").strip():
+        fail("Missing key field: image", {"response": data})
     print(json.dumps(data, ensure_ascii=False))
 
 

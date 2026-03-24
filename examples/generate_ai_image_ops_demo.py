@@ -25,19 +25,12 @@ def main():
         print("ERROR: VECTCUT_API_KEY is required")
         raise SystemExit(1)
 
-    draft_id = sys.argv[1] if len(sys.argv) > 1 else ""
-    if not draft_id:
-        print("Usage: generate_ai_image_ops_demo.py <draft_id>")
-        raise SystemExit(1)
+    reference_image = sys.argv[1] if len(sys.argv) > 1 else "https://oss-jianying-resource.oss-cn-hangzhou.aliyuncs.com/test/shuziren.jpg"
 
     text_to_image = {
         "prompt": "绘制一张卡通风格教学卡片，主题是光合作用中的二氧化碳循环",
         "model": "nano_banana_pro",
-        "size": "1376x768",
-        "draft_id": draft_id,
-        "start": 0,
-        "end": 4,
-        "track_name": "video_main",
+        "size": "1024x1024",
     }
     print("=== TEXT TO IMAGE ===")
     run(text_to_image)
@@ -45,12 +38,8 @@ def main():
     image_to_image = {
         "prompt": "把背景换成秋天的枫叶红色树林，画风保持一致",
         "model": "nano_banana_2",
-        "reference_image": "https://oss-jianying-resource.oss-cn-hangzhou.aliyuncs.com/test/shuziren.jpg",
+        "reference_image": reference_image,
         "size": "1024x1024",
-        "draft_id": draft_id,
-        "start": 4,
-        "end": 8,
-        "track_name": "video_main",
     }
     print("=== IMAGE TO IMAGE ===")
     run(image_to_image)
