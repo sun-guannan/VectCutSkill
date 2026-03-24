@@ -27,9 +27,10 @@ def main():
         raise SystemExit(1)
 
     generate_payload = {
-        "model": "veo3.1",
         "prompt": "特写镜头下，两人凝视着墙上一幅神秘图案，火把光芒忽明忽暗摇曳。",
         "resolution": "1280x720",
+        "generate_audio": True,
+        "images": ["https://oss-jianying-resource.oss-cn-hangzhou.aliyuncs.com/test/shuziren.jpg"],
     }
     print("=== GENERATE_AI_VIDEO ===")
     create_res = run("generate_ai_video", generate_payload)

@@ -5,11 +5,12 @@
 - `GET /cut_jianying/aivideo/task_status`
 
 ## 请求路由与参数策略
-- 生成任务必填：`prompt`、`model`、`resolution`。
+- 生成任务必填：`prompt`、`resolution`。
+- `model` 可选，默认 `veo3.1`；可选值：`veo3.1`、`veo3.1-pro`、`seedance-1.5-pro`、`grok-video-3`。
 - 轮询任务必填：`task_id`。
-- 首尾帧模式仅在支持模型下传 `end_image`。
-- `gen_duration` 仅在支持该字段的模型下传入。
-- 入草稿场景可补充：`draft_id`、`target_start`、`track_name`、`relative_index`。
+- 图生视频与首尾帧模式统一使用 `images`（array<string>）传图，按顺序表达首帧、尾帧与参考图。
+- `gen_duration` 为可选 number，仅在支持模型下传入。
+- `generate_audio` 为可选 boolean，仅在seedance-1.5-pro模型下传入。
 
 ## 专属异常处理
 - 当 HTTP 状态码非 2xx：
@@ -47,3 +48,6 @@
 - `prompt`
 - `model`
 - `resolution`
+- `images`
+- `gen_duration`
+- `generate_audio`

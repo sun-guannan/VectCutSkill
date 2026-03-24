@@ -9,13 +9,8 @@ import urllib.request
 
 BASE_URL = os.getenv("VECTCUT_BASE_URL", "https://open.vectcut.com/cut_jianying")
 API_KEY = os.getenv("VECTCUT_API_KEY", "")
-ALLOWED_MODELS = {"veo3.1", "veo3.1-pro", "seedance-1.5-pro", "grok-video-3", "sora2"}
+ALLOWED_MODELS = {"veo3.1", "veo3.1-pro", "seedance-1.5-pro", "grok-video-3"}
 SIZE_RE = re.compile(r"^\d+x\d+$")
-MODEL_DURATION = {
-    "grok-video-3": {6, 10, 15},
-    "sora2": {10, 15},
-    "seedance-1.5-pro": {4, 5, 6, 7, 8, 9, 10, 11, 12},
-}
 
 
 def fail(error, output=None):
@@ -57,41 +52,29 @@ def request(method, url, payload=None):
 
 
 def validate_generate(payload):
-    for key in ["prompt", "model", "resolution"]:
+    for key in ["prompt", "resolution"]:
         if not isinstance(payload.get(key), str) or not payload.get(key).strip():
             fail(f"{key} is required")
-    model = payload["model"]
+    model = payload.get("model", "veo3.1")
+    if not isinstance(model, str) or not model.strip():
+        fail("model must be a non-empty string")
     if model not in ALLOWED_MODELS:
-        fail("model must be one of: veo3.1, veo3.1-pro, seedance-1.5-pro, grok-video-3, sora2")
+        fail("model must be one of: veo3.1, veo3.1-pro, seedance-1.5-pro, grok-video-3")
+    payload["model"] = model
     if not SIZE_RE.match(payload["resolution"]):
         fail("resolution must match format: <width>x<height>")
-    if "reference_image" in payload:
-        ref = payload["reference_image"]
-        if isinstance(ref, str):
-            if not ref.startswith(("http://", "https://")):
-                fail("reference_image must start with http:// or https://")
-        elif isinstance(ref, list):
-            if not ref:
-                fail("reference_image array cannot be empty")
-            for u in ref:
-                if not isinstance(u, str) or not u.startswith(("http://", "https://")):
-                    fail("reference_image array must contain valid urls")
-        else:
-            fail("reference_image must be a string or array<string>")
-    if "end_image" in payload:
-        end_image = payload["end_image"]
-        if not isinstance(end_image, str) or not end_image.startswith(("http://", "https://")):
-            fail("end_image must start with http:// or https://")
-        if model not in {"veo3.1", "veo3.1-pro", "seedance-1.5-pro"}:
-            fail(f"model {model} does not support end_image")
+    if "images" in payload:
+        images = payload["images"]
+        if not isinstance(images, list):
+            fail("images must be an array<string>")
+        for u in images:
+            if not isinstance(u, str) or not u.startswith(("http://", "https://")):
+                fail("images must contain valid urls")
     if "gen_duration" in payload:
-        if not isinstance(payload["gen_duration"], int):
-            fail("gen_duration must be an integer")
-        allowed = MODEL_DURATION.get(model)
-        if not allowed:
-            fail(f"model {model} does not support gen_duration")
-        if payload["gen_duration"] not in allowed:
-            fail(f"gen_duration for {model} must be one of: {sorted(allowed)}")
+        if not isinstance(payload["gen_duration"], (int, float)):
+            fail("gen_duration must be a number")
+    if "generate_audio" in payload and not isinstance(payload["generate_audio"], bool):
+        fail("generate_audio must be a boolean")
 
 
 def validate_status(payload):

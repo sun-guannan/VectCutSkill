@@ -7,24 +7,16 @@
 
 ### 请求参数
 - `prompt` (string, required): 视频生成提示词。
-- `model` (string, required): 模型名，常用 `veo3.1`、`veo3.1-pro`、`seedance-1.5-pro`、`grok-video-3`、`sora2`。
+- `model` (string, required): 模型名，常用 `veo3.1`、`veo3.1-pro`、`seedance-1.5-pro`、`grok-video-3`。
 - `resolution` (string, required): 输出分辨率，格式 `宽x高`，如 `1280x720`、`1080x1920`。
-- `reference_image` (string|array<string>, optional): 参考图 URL，支持首帧扩展或多图参考（按模型能力）。
-- `end_image` (string, optional): 尾帧图片 URL，支持首尾帧模型可传。
-- `gen_duration` (integer, optional): 生成时长（秒），仅支持该参数的模型可传。
-- `draft_id` (string, optional): 草稿 ID，传入后可在成功态回包里关联草稿信息。
-- `target_start` (number, optional): 入轨起点（秒）。
-- `track_name` (string, optional): 轨道名称，默认 `video_main`。
-- `relative_index` (integer, optional): 轨道内相对层级。
-- `transform_x`/`transform_y`/`scale_x`/`scale_y`/`speed`/`volume` (number, optional): 位置、缩放、速度、音量。
-- `transition`/`transition_duration` (optional): 转场及时长。
-- `mask_type` 与 `mask_*` (optional): 蒙版与几何参数。
+- `gen_duration` (number, optional): 生成时长（秒），部分模型支持。
+- `generate_audio` (boolean, optional): 是否生成声音，seedance-1.5-pro模型支持，默认 `false`。
+- `images` (array<string>, optional): 参考图或首尾帧图。通常第一张为首帧，第二张为尾帧，其余为参考图。
 
 ### 模型能力约束
-- `veo3.1`/`veo3.1-pro`：支持首帧扩展、首尾帧、多图参考（最多 3 张）；不支持 `gen_duration`。
-- `seedance-1.5-pro`：支持首帧、首尾帧、多图参考；支持 `gen_duration`（4~12）。
-- `grok-video-3`：支持首帧扩展；不支持首尾帧与多图参考；支持 `gen_duration`（6/10/15）。
-- `sora2`：支持首帧扩展；不支持首尾帧与多图参考；支持 `gen_duration`（10/15），且不建议使用真人照片作为参考图。
+- `veo3.1`/`veo3.1-pro`/`seedance-1.5-pro`/`grok-video-3`：当前主要可用模型。
+- `grok-video-3`：按服务端能力灰度支持，建议以实时接口能力为准。
+- `gen_duration`、`generate_audio` 与 `images` 的可用性受模型能力约束。
 
 ### 示例请求
 ```bash
@@ -35,8 +27,8 @@ curl --location --request POST 'https://open.vectcut.com/cut_jianying/generate_a
   "model": "veo3.1",
   "prompt": "一张超写实的微距照片，照片中，迷你冲浪者在古朴的石制浴室水槽内乘风破浪。",
   "resolution": "1080x1920",
-  "target_start": 1.2,
-  "track_name": "video_main"
+  "generate_audio": true,
+  "images": ["https://example.com/frame_start.jpg"]
 }'
 ```
 
@@ -63,9 +55,6 @@ curl --location --request GET 'https://open.vectcut.com/cut_jianying/aivideo/tas
 - `status` (string): `processing` / `completed` / `failed` 等。
 - `progress` (number)
 - `video_url` (string，完成态可用)
-- `draft_id` (string)
-- `draft_url` (string)
-- `draft_error` (string)
 
 ### 错误返回
 - HTTP 非 2xx：鉴权或服务异常。

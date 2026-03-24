@@ -32,7 +32,7 @@ dependency:
 * **文本编排生命周期**：通过 `add_text` 创建文本素材，使用 `modify_text` 调整文案与样式，使用 `remove_text` 清理无效文本；文本动画、字体与局部样式优先从枚举中选取，保证可用性与一致性。
 * **图片编排生命周期**：通过 `add_image` 添加图片素材，使用 `modify_image` 调整图片源、时间段、位置与动画，使用 `remove_image` 清理无效图片；动画与蒙版类型优先从枚举中选取，保证编排稳定性。
 * **视频编排生命周期**：通过 `add_video` 添加视频素材，使用 `modify_video` 调整素材源、裁切区间、位置与速度，使用 `remove_video` 清理无效视频；转场在片段首尾紧邻时生效，且需加在前一个元素上。
-* **AI 视频生成能力**：通过 `generate_ai_video` 调用聚合视频模型生成异步任务，再通过 `aivideo/task_status` 查询进度与视频结果；支持文生视频、图生视频与部分模型的首尾帧模式。
+* **AI 视频生成能力**：通过 `generate_ai_video` 调用聚合视频模型生成异步任务，再通过 `aivideo/task_status` 查询进度与视频结果；支持文生视频、图生视频与首尾帧模式，图像输入统一通过 `images` 传入。
 * **数字人能力**：通过 `digital_human/create` 发起音频驱动数字人任务，再通过 `digital_human/task_status` 查询生成状态与结果。
 * **关键帧编排能力**：通过 `add_video_keyframe` 为文字、图片、视频设置位置、大小、透明度、旋转等关键帧，支持单点与批量关键帧写入。
 * **云渲染与结果核验**：通过 `generate_video` 发起云渲染，再用 `task_status` 轮询任务状态。云渲染用于两类目标：创作中渲染中间结果核对预期；流程结束渲染最终成片并输出可直接播放的视频链接。
@@ -132,11 +132,11 @@ export VECTCUT_API_KEY="<your_token>"
 - 提示：`prompts/generate_ai_video_ops.md`
 - 端点：`POST /cut_jianying/generate_ai_video`、`GET /cut_jianying/aivideo/task_status`
 - 关键入参：
-  - generate：`prompt`、`model`、`resolution`
+  - generate：`prompt`、`resolution`、`model(默认 veo3.1)`、`images`、`gen_duration`、`generate_audio`
   - status：`task_id`
 - 关键出参：
-  - generate：`task_id`
-  - status：`status`、`progress`、`video_url`、`draft_id`、`draft_url`
+  - generate：`status`、`task_id`
+  - status：`status`、`progress`、`video_url`
 
 ### 当前已落地能力域：digital_human
 - 规则：`rules/digital_human_rules.md`
