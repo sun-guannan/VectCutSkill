@@ -21,17 +21,13 @@ def main():
         "provider": "minimax",
         "model": "speech-2.6-turbo",
         "voice_id": "audiobook_male_1",
-        "volume": 10,
-        "target_start": 3,
-        "effect_type": "麦霸",
-        "effect_params": [45, 80],
     }
 
     out = subprocess.check_output(
-        [sys.executable, str(SCRIPT), "generate_speech", json.dumps(payload, ensure_ascii=False)],
+        [sys.executable, str(SCRIPT), "tts_generate", json.dumps(payload, ensure_ascii=False)],
         text=True,
     )
-    print(f"GENERATE_SPEECH => {out.strip()}")
+    print(f"TTS_GENERATE => {out.strip()}")
 
     file_url = sys.argv[2] if len(sys.argv) > 2 else ""
     if file_url:

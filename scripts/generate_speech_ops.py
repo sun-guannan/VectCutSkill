@@ -6,11 +6,10 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-BASE_URL = os.getenv("VECTCUT_BASE_URL", "https://open.vectcut.com/cut_jianying")
 API_KEY = os.getenv("VECTCUT_API_KEY", "")
 ALLOWED_PROVIDERS = {"azure", "volc", "minimax", "fish"}
 MINIMAX_MODELS = {"speech-2.6-turbo", "speech-2.6-hd"}
-CLONE_URL = os.getenv("VECTCUT_LLM_BASE_URL", "https://open.vectcut.com/llm")
+LLM_BASE_URL = os.getenv("VECTCUT_LLM_BASE_URL", "https://open.vectcut.com/llm")
 
 
 def fail(error, output=None):
@@ -50,7 +49,7 @@ def request_get(url):
 
 
 def validate_generate_payload(payload):
-    required = ["text", "provider", "voice_id"]
+    required = ["provider", "text", "voice_id", "model"]
     for key in required:
         v = payload.get(key)
         if not isinstance(v, str) or not v.strip():
@@ -61,21 +60,12 @@ def validate_generate_payload(payload):
         fail("provider must be one of: azure, volc, minimax, fish")
 
     model = payload.get("model")
+
     if provider == "minimax":
         if not isinstance(model, str) or not model.strip():
             fail("model is required when provider=minimax")
         if model not in MINIMAX_MODELS:
             fail("model for minimax must be one of: speech-2.6-turbo, speech-2.6-hd")
-
-    if "volume" in payload and not isinstance(payload.get("volume"), (int, float)):
-        fail("volume must be a number")
-    if "target_start" in payload and not isinstance(payload.get("target_start"), (int, float)):
-        fail("target_start must be a number")
-    if "effect_type" in payload:
-        if not isinstance(payload.get("effect_type"), str) or not payload.get("effect_type").strip():
-            fail("effect_type must be a non-empty string")
-        if "effect_params" in payload and not isinstance(payload.get("effect_params"), list):
-            fail("effect_params must be an array")
 
 
 def validate_clone_payload(payload):
@@ -130,22 +120,20 @@ def request_post(url, req_payload):
     return data
 
 
-def run_generate_speech(payload):
+def run_tts_generate(payload):
     validate_generate_payload(payload)
-    data = request_post(f"{BASE_URL.rstrip('/')}/generate_speech", dict(payload))
-    output = data.get("output") if isinstance(data.get("output"), dict) else {}
-    if not output.get("audio_url"):
-        fail("Missing key field: output.audio_url", {"response": data})
-    has_draft_ctx = bool(output.get("draft_id") or output.get("draft_url") or output.get("material_id"))
-    if has_draft_ctx and not output.get("material_id"):
-        fail("Missing key field: output.material_id", {"response": data})
+    data = request_post(f"{LLM_BASE_URL.rstrip('/')}/tts/generate", dict(payload))
+    if not isinstance(data.get("provider"), str) or not data.get("provider").strip():
+        fail("Missing key field: provider", {"response": data})
+    if not isinstance(data.get("url"), str) or not data.get("url").strip():
+        fail("Missing key field: url", {"response": data})
     print(json.dumps(data, ensure_ascii=False))
 
 
 def run_fish_clone(payload):
     validate_clone_payload(payload)
     req_payload = {k: v for k, v in payload.items() if k in {"file_url", "title"}}
-    data = request_post(f"{CLONE_URL.rstrip('/')}/tts/fish/clone_voice", req_payload)
+    data = request_post(f"{LLM_BASE_URL.rstrip('/')}/tts/fish/clone_voice", req_payload)
     if not data.get("voice_id"):
         fail("Missing key field: voice_id", {"response": data})
     print(json.dumps(data, ensure_ascii=False))
@@ -155,7 +143,7 @@ def run_voice_assets(payload):
     validate_assets_payload(payload)
     query = {k: payload[k] for k in ["limit", "offset", "provider"] if k in payload}
     qs = urllib.parse.urlencode(query)
-    url = f"{CLONE_URL.rstrip('/')}/tts/voice_assets"
+    url = f"{LLM_BASE_URL.rstrip('/')}/tts/voice_assets"
     if qs:
         url = f"{url}?{qs}"
     data = request_get(url)
@@ -164,12 +152,12 @@ def run_voice_assets(payload):
 
 def main():
     if len(sys.argv) < 3:
-        print(f"Usage: {sys.argv[0]} <generate_speech|fish_clone|voice_assets> '<json_payload>'")
+        print(f"Usage: {sys.argv[0]} <tts_generate|fish_clone|voice_assets> '<json_payload>'")
         sys.exit(1)
     action = sys.argv[1]
     payload = parse_payload(sys.argv[2])
-    if action == "generate_speech":
-        run_generate_speech(payload)
+    if action == "tts_generate":
+        run_tts_generate(payload)
         return
     if action == "fish_clone":
         run_fish_clone(payload)
@@ -177,7 +165,7 @@ def main():
     if action == "voice_assets":
         run_voice_assets(payload)
         return
-    print(f"Usage: {sys.argv[0]} <generate_speech|fish_clone|voice_assets> '<json_payload>'")
+    print(f"Usage: {sys.argv[0]} <tts_generate|fish_clone|voice_assets> '<json_payload>'")
     sys.exit(1)
 
 

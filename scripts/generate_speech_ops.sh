@@ -1,12 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-BASE_URL="${VECTCUT_BASE_URL:-https://open.vectcut.com/cut_jianying}"
 LLM_BASE_URL="${VECTCUT_LLM_BASE_URL:-https://open.vectcut.com/llm}"
 API_KEY="${VECTCUT_API_KEY:-}"
 
 usage() {
-  echo "Usage: $0 <generate_speech|fish_clone|voice_assets> '<json_payload>'"
+  echo "Usage: $0 <tts_generate|fish_clone|voice_assets> '<json_payload>'"
   exit 1
 }
 
@@ -32,16 +31,13 @@ extract_json_number() {
   printf '%s' "$PAYLOAD" | sed -n "s/.*\"${key}\"[[:space:]]*:[[:space:]]*\([-0-9.][0-9.]*\).*/\1/p"
 }
 
-if [[ "$ACTION" == "generate_speech" ]]; then
+if [[ "$ACTION" == "tts_generate" ]]; then
   TEXT="$(extract_json_string text)"; PROVIDER="$(extract_json_string provider)"; VOICE_ID="$(extract_json_string voice_id)"; MODEL="$(extract_json_string model)"
-  [[ -z "$TEXT" || -z "$PROVIDER" || -z "$VOICE_ID" ]] && fail "text/provider/voice_id is required"
+  [[ -z "$TEXT" || -z "$PROVIDER" || -z "$VOICE_ID" || -z "$MODEL" ]] && fail "provider/text/voice_id/model is required"
   [[ ! "$PROVIDER" =~ ^(azure|volc|minimax|fish)$ ]] && fail "provider must be one of: azure, volc, minimax, fish"
   [[ "$PROVIDER" == "minimax" && -z "$MODEL" ]] && fail "model is required when provider=minimax"
   [[ "$PROVIDER" == "minimax" && ! "$MODEL" =~ ^(speech-2.6-turbo|speech-2.6-hd)$ ]] && fail "model for minimax must be one of: speech-2.6-turbo, speech-2.6-hd"
-  VOLUME="$(extract_json_number volume)"; TARGET_START="$(extract_json_number target_start)"
-  [[ -n "$VOLUME" && ! "$VOLUME" =~ ^-?[0-9]+(\.[0-9]+)?$ ]] && fail "volume must be a number"
-  [[ -n "$TARGET_START" && ! "$TARGET_START" =~ ^-?[0-9]+(\.[0-9]+)?$ ]] && fail "target_start must be a number"
-  curl --silent --show-error --location --request POST "${BASE_URL}/generate_speech" --header "Authorization: Bearer ${API_KEY}" --header "Content-Type: application/json" --data-raw "$PAYLOAD"
+  curl --silent --show-error --location --request POST "${LLM_BASE_URL}/tts/generate" --header "Authorization: Bearer ${API_KEY}" --header "Content-Type: application/json" --data-raw "$PAYLOAD"
   echo
   exit 0
 fi

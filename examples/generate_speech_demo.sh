@@ -7,11 +7,11 @@ CLONE_FILE_URL="${2:-}"
 
 [[ -z "${VECTCUT_API_KEY:-}" ]] && echo "ERROR: VECTCUT_API_KEY is required" && exit 1
 
-PAYLOAD="{\"text\":\"${TEXT}\",\"provider\":\"minimax\",\"model\":\"speech-2.6-turbo\",\"voice_id\":\"audiobook_male_1\",\"volume\":10,\"target_start\":3,\"effect_type\":\"麦霸\",\"effect_params\":[45,80]}"
+PAYLOAD="{\"text\":\"${TEXT}\",\"provider\":\"minimax\",\"model\":\"speech-2.6-turbo\",\"voice_id\":\"audiobook_male_1\"}"
 
 echo "=== SHELL DEMO ==="
-RES="$(${ROOT}/scripts/generate_speech_ops.sh generate_speech "${PAYLOAD}")"
-echo "generate_speech => ${RES}"
+RES="$(${ROOT}/scripts/generate_speech_ops.sh tts_generate "${PAYLOAD}")"
+echo "tts_generate => ${RES}"
 
 if [[ -n "$CLONE_FILE_URL" ]]; then
   echo "=== FISH CLONE DEMO ==="
