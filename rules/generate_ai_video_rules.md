@@ -1,7 +1,7 @@
 # generate_ai_video 端点规则（generate_ai_video/ai_video_task_status）
 
 ## 适用范围
-- `POST /cut_jianying/generate_ai_video`
+- `POST /llm/generate_ai_video`
 - `GET /cut_jianying/aivideo/task_status`
 
 ## 请求路由与参数策略

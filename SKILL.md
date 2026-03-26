@@ -130,7 +130,7 @@ export VECTCUT_API_KEY="<your_token>"
 - 规则：`rules/generate_ai_video_rules.md`
 - 参数：`references/endpoints/generate_ai_video.md`
 - 提示：`prompts/generate_ai_video_ops.md`
-- 端点：`POST /cut_jianying/generate_ai_video`、`GET /cut_jianying/aivideo/task_status`
+- 端点：`POST /llm/generate_ai_video`、`GET /cut_jianying/aivideo/task_status`
 - 关键入参：
   - generate：`prompt`、`resolution`、`model(默认 veo3.1)`、`images`、`gen_duration`、`generate_audio`
   - status：`task_id`

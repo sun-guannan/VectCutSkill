@@ -2,7 +2,7 @@
 
 ## generate_ai_video
 - Method: `POST`
-- Path: `/cut_jianying/generate_ai_video`
+- Path: `/llm/generate_ai_video`
 - 用途：调用聚合视频模型生成视频，返回异步任务 `task_id`。
 
 ### 请求参数
@@ -20,7 +20,7 @@
 
 ### 示例请求
 ```bash
-curl --location --request POST 'https://open.vectcut.com/cut_jianying/generate_ai_video' \
+curl --location --request POST 'https://open.vectcut.com/llm/generate_ai_video' \
 --header 'Authorization: Bearer <token>' \
 --header 'Content-Type: application/json' \
 --data-raw '{

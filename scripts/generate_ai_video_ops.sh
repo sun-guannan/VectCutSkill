@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-BASE_URL="${VECTCUT_BASE_URL:-https://open.vectcut.com/cut_jianying}"
+BASE_URL="${VECTCUT_BASE_URL:-https://open.vectcut.com}"
 API_KEY="${VECTCUT_API_KEY:-}"
 
 usage() {
@@ -47,7 +47,7 @@ if [[ "$ACTION" == "generate_ai_video" ]]; then
   if [[ "$PAYLOAD" != *'"model"'* ]]; then
     PAYLOAD="$(printf '%s' "$PAYLOAD" | sed 's/}[[:space:]]*$/,\"model\":\"veo3.1\"}/')"
   fi
-  curl --silent --show-error --location --request POST "${BASE_URL}/generate_ai_video" \
+  curl --silent --show-error --location --request POST "${BASE_URL}/llm/generate_ai_video" \
     --header "Authorization: Bearer ${API_KEY}" \
     --header "Content-Type: application/json" \
     --data-raw "$PAYLOAD"
@@ -58,7 +58,7 @@ fi
 if [[ "$ACTION" == "ai_video_task_status" ]]; then
   TASK_ID="$(extract_json_string task_id)"
   [[ -z "$TASK_ID" ]] && fail "task_id is required"
-  curl --silent --show-error --location --request GET "${BASE_URL}/aivideo/task_status?task_id=${TASK_ID}" \
+  curl --silent --show-error --location --request GET "${BASE_URL}/cut_jianying/aivideo/task_status?task_id=${TASK_ID}" \
     --header "Authorization: Bearer ${API_KEY}" \
     --header "Content-Type: application/json"
   echo

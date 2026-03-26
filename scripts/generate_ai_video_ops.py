@@ -7,7 +7,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-BASE_URL = os.getenv("VECTCUT_BASE_URL", "https://open.vectcut.com/cut_jianying")
+BASE_URL = os.getenv("VECTCUT_BASE_URL", "https://open.vectcut.com")
 API_KEY = os.getenv("VECTCUT_API_KEY", "")
 ALLOWED_MODELS = {"veo3.1", "veo3.1-pro", "seedance-1.5-pro", "grok-video-3"}
 SIZE_RE = re.compile(r"^\d+x\d+$")
@@ -84,7 +84,7 @@ def validate_status(payload):
 
 def run_generate(payload):
     validate_generate(payload)
-    data = request("POST", f"{BASE_URL.rstrip('/')}/generate_ai_video", payload)
+    data = request("POST", f"{BASE_URL.rstrip('/')}/llm/generate_ai_video", payload)
     if isinstance(data, dict):
         task_id = data.get("task_id")
         if not task_id and isinstance(data.get("output"), dict):
@@ -99,7 +99,7 @@ def run_generate(payload):
 def run_status(payload):
     validate_status(payload)
     qs = urllib.parse.urlencode({"task_id": payload["task_id"]})
-    data = request("GET", f"{BASE_URL.rstrip('/')}/aivideo/task_status?{qs}")
+    data = request("GET", f"{BASE_URL.rstrip('/')}/cut_jianying/aivideo/task_status?{qs}")
     if not isinstance(data, dict):
         fail("JSON response must be an object", {"response": data})
     status = str(data.get("status", "")).lower()
