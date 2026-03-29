@@ -15,6 +15,7 @@
 - `endpoints/video.md`：视频端点明细（add_video/modify_video/remove_video）
 - `endpoints/image.md`：图片端点明细（add_image/modify_image/remove_image）
 - `endpoints/text.md`：文本端点明细（add_text/modify_text/remove_text）
+- `endpoints/subtitle_template.md`：字幕模版端点明细（generate_smart_subtitle/sta_subtitle/smart_subtitle_task_status）
 - `endpoints/keyframe.md`：关键帧端点明细（add_video_keyframe）
 - `endpoints/process.md`：预处理端点明细（extract_audio/split_video）
 
@@ -30,6 +31,7 @@
 - `enums/text_intro_anims.json`：文字入场动画枚举
 - `enums/text_outro_anims.json`：文字出场动画枚举
 - `enums/text_loop_anims.json`：文字循环动画枚举
+- `enums/subtitle_template_typs.json`：字幕模版枚举（预留 `id/title/detail`）
 
 ## Draft Query 解析
 - `draft_query_notes.md`：`query_script` 返回 `output` 的结构解读（总体配置、materials、ID 关联、轨道、关键帧）
