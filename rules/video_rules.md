@@ -5,6 +5,11 @@
 - `POST /cut_jianying/modify_video`
 - `POST /cut_jianying/remove_video`
 
+## 调用策略
+- 标准流程（add）：准备 `video_url` 与可选参数 -> 调用 `add_video` -> 校验 `output.draft_id/draft_url`。
+- 标准流程（modify/remove）：准备 `draft_id/material_id` 与变更参数 -> 调用对应端点 -> 校验 `output.draft_id/draft_url`。
+- 反思核验：当执行 `add_video` 后，优先追加一次 `generate_video -> task_status` 中间渲染，检查画面衔接、节奏和转场效果是否符合预期；不符合预期时先 `modify_video` 再继续后续编排。
+
 ## 专属异常处理
 - 当 HTTP 状态码非 2xx：
   - 含义：鉴权失败、参数非法或服务端异常。

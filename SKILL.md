@@ -26,7 +26,7 @@ dependency:
   - 三种回包结构不同，必须按端点解析：`asr_basic -> result.raw.result.utterances`；`asr_nlp -> segments`；`asr_llm -> segments(含 keywords/en)`。
 * **脚本规划**：根据主题（如“成语故事”、“产品评测”）自动拆解分镜，确定各片段时长。
 * **草稿生命周期管理**：先创建并维护草稿，再进入编排流程；优先调用 `create_draft` 初始化草稿，按需使用 `modify_draft` 修改草稿名/封面，任务异常或清理阶段使用 `remove_draft` 删除草稿。
-* **反思自查**：在关键步骤后调用 `query_script` 回看当前草稿结构，核对轨道、素材与时间段是否符合预期；若不一致，先定位问题再执行修正操作。
+* **反思自查**：在关键步骤后调用 `query_script` 回看当前草稿结构；当执行 `add_text`、`add_image`、`add_video` 等新增编排后，优先补一次 `generate_video + task_status` 中间渲染核验画面与节奏是否符合预期；若不一致，先定位问题再执行修正操作。
 * **视觉编排**：基于已创建草稿自主选择并添加转场（Transitions）、特效（Effects）、滤镜（Filters）和文本（Text）。
 * **AI 资源补全**：当素材不足时，主动调用 `generate_image`、`tts_generate` 或 `generate_ai_video` 生成 B-roll 填充；其中 `generate_image` 通过 `prompt + model + size + reference_image` 生成图片并返回可复用图片 URL，`tts_generate` 通过 `provider + text + voice_id + model` 合成配音并返回可复用音频 URL。
 * **文本编排生命周期**：通过 `add_text` 创建文本素材，使用 `modify_text` 调整文案与样式，使用 `remove_text` 清理无效文本；文本动画、字体与局部样式优先从枚举中选取，保证可用性与一致性。
@@ -35,7 +35,7 @@ dependency:
 * **AI 视频生成能力**：通过 `generate_ai_video` 调用聚合视频模型生成异步任务，再通过 `aivideo/task_status` 查询进度与视频结果；支持文生视频、图生视频与首尾帧模式，图像输入统一通过 `images` 传入。
 * **数字人能力**：通过 `digital_human/create` 发起音频驱动数字人任务，再通过 `digital_human/task_status` 查询生成状态与结果。
 * **关键帧编排能力**：通过 `add_video_keyframe` 为文字、图片、视频设置位置、大小、透明度、旋转等关键帧，支持单点与批量关键帧写入。
-* **云渲染与结果核验**：通过 `generate_video` 发起云渲染，再用 `task_status` 轮询任务状态。云渲染用于两类目标：创作中渲染中间结果核对预期；流程结束渲染最终成片并输出可直接播放的视频链接。
+* **云渲染与结果核验**：通过 `generate_video` 发起云渲染，再用 `task_status` 轮询任务状态。云渲染用于两类目标：创作中在字幕/图片/视频新增后优先渲染中间结果做反思核对；流程结束渲染最终成片并输出可直接播放的视频链接。
 * **音画同步**：如果需要，可以利用 `get_duration` 计算素材时长，精确对齐视频轨道与音频轨道。
 * **音视频预处理工具**：在编排前可优先使用基础处理端点清洗素材。`extract_audio` 可从视频中提取音频（`POST /process/extract_audio`，入参 `video_url`）；`split_video` 可按时间段切分视频或音频（`POST /process/split_video`，入参 `video_url`、`start`、`end`）。适用于替换现有视频 B-roll、素材混剪、先切段再入草稿等场景。
 

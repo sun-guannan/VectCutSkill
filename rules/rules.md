@@ -16,6 +16,7 @@
 - ASR 三接口回包结构不一致：`asr_basic` 解析 `result.raw.result.utterances`，`asr_nlp/asr_llm` 解析 `segments`。
 - 内部统一使用秒；如果上游返回毫秒，先换算为秒。
 - 执行端点请求时默认使用 `curl`，复杂任务才去生成 Python 业务编排代码。
+- 当发生 `add_text`、`add_image`、`add_video` 等新增编排动作后，优先执行一次中间核验渲染：`generate_video -> task_status`，用返回视频检查字幕、画面和节奏是否符合预期，再决定是否继续堆叠编辑。
 - 云渲染标准流程：`generate_video` 发起任务，`output.task_status` 轮询到 `output.result`不为空 后返回可播放链接`output.result`。
 
 ## 通用异常处理

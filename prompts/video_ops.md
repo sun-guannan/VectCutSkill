@@ -12,7 +12,8 @@
 4) Python 代码必须包含错误拦截：HTTP 非 2xx、响应非 JSON、`success=false` 或 `error` 非空、关键字段缺失。
 5) 关键字段缺失判定（按动作）：
 - add/modify/remove: `output.draft_id`、`output.draft_url`
-6) 每次只输出一组最可执行方案（curl + Python）。
+6) 当动作为 `add_video` 时，在主方案后追加一段“反思核验”步骤：调用 `generate_video` 并通过 `task_status` 轮询拿到中间渲染链接，用于检查视频衔接与节奏是否符合预期。
+7) 每次只输出一组最可执行方案（curl + Python）。
 
 输出格式：
 - 第一行：一句简短说明

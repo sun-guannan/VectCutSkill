@@ -5,6 +5,11 @@
 - `POST /cut_jianying/modify_image`
 - `POST /cut_jianying/remove_image`
 
+## 调用策略
+- 标准流程（add）：准备 `image_url` 与可选样式参数 -> 调用 `add_image` -> 校验 `output.draft_id/draft_url`。
+- 标准流程（modify/remove）：准备 `draft_id/material_id` 与变更参数 -> 调用对应端点 -> 校验 `output.draft_id/draft_url`。
+- 反思核验：当执行 `add_image` 后，优先追加一次 `generate_video -> task_status` 中间渲染，检查图片位置、时长、动画与转场是否符合预期；不符合预期时先 `modify_image` 再继续后续编排。
+
 ## 专属异常处理
 - 当 `error` 包含 `Unknown intro animation` / `intro_animation` 非法：
   - 含义：`intro_animation` 不在可用列表中。

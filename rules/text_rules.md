@@ -11,6 +11,7 @@
 - 标准流程（modify）：准备 `draft_id/material_id/text/start/end` -> 调用 `modify_text` -> 校验 `output.draft_id/draft_url`。
 - 标准流程（remove）：准备 `draft_id/material_id` -> 调用 `remove_text` -> 校验 `output.draft_id/draft_url`。
 - 时长约束：add/modify 必须满足 `end > start`。
+- 反思核验：当执行 `add_text` 后，优先追加一次 `generate_video -> task_status` 中间渲染，检查字幕可读性、出入场时机与画面遮挡；不符合预期时先 `modify_text` 再继续后续编排。
 
 ## 入参约束
 - add 必填：`text`、`start`、`end`。

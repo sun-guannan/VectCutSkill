@@ -30,7 +30,8 @@
 6) add_text 必须校验 `output.material_id`；modify/remove 至少校验 `output.draft_id` 或 `output.draft_url`。
 7) add/modify 必须校验 `start/end` 为数字且 `end > start`。
 8) 非核心字段按原样透传到请求体。
-9) 每次只输出当前输入的最小可执行方案。
+9) 当动作为 `add_text` 时，在主方案后追加一段“反思核验”步骤：调用 `generate_video` 并通过 `task_status` 轮询拿到中间渲染链接，用于检查字幕效果是否符合预期。
+10) 每次只输出当前输入的最小可执行方案。
 
 输出格式：
 - 第一行：一句简短说明
