@@ -346,7 +346,7 @@ curl -X GET "http://open.vectcut.com/cut_jianying/get_transition_types" \
 
 - `POST /generate_video`：对草稿 `draft_id` 发起云渲染（返回 `task_id`）。
 - `POST /task_status`：轮询 `task_id` 获取渲染进度与结果。
-- 创作过程中：可按关键里程碑发起渲染，核对当前画面、节奏、字幕与预期是否一致。
+- 创作过程中：应高频发起中间渲染做反思核验，频率基本与 `query_script` 自查一致；每次关键编排后都优先 `generate_video + task_status` 回看画面、节奏、字幕是否满足预期。
 - 任务结束时：必须轮询到完成态，并把结果中的可播放视频链接作为最终输出返回。
 
 ### 5. 典型场景示例

@@ -30,6 +30,17 @@
   - `render_index`：层级顺序。
   - `common_keyframes` / `keyframe_refs`：动画控制。
 
+## “轨道挨着”判定（重点）
+- 判断 segment 在目标轨道上的真实位置，必须使用：
+  - `target_start = target_timerange.start`
+  - `target_end = target_timerange.start + target_timerange.duration`
+- `target_start/target_end` 才是目标轨道时间范围；`source_timerange` 仅表示源素材裁切区间，不用于轨道相邻判定。
+- 两个 segment 在同一轨道判定：
+  - 挨着（无间隙）：`A.target_end == B.target_start` 或 `B.target_end == A.target_start`
+  - 有重叠：`max(A.target_start, B.target_start) < min(A.target_end, B.target_end)`
+  - 有间隙：`A.target_end < B.target_start` 或 `B.target_end < A.target_start`
+- 若有时间单位精度差异（微秒/毫秒换算后的小误差），先统一单位，再用固定容差比较。
+
 ## 关键帧结构
 - 顶层 `keyframes` 为分类容器；实际关键帧通常落在 `segment.common_keyframes`。
 - `common_keyframes[].property_type` 指明属性类型（如 `KFTypePositionX`、`KFTypePositionY`）。
@@ -40,6 +51,19 @@
 - 常见模式：基础画面与音频层 `render_index` 较低，特效/滤镜/贴纸/文本逐级提高。
 - 同时间区间冲突时，优先按渲染层与轨道顺序判断可见性。
 - `track_render_index` 与 `render_index` 共同决定最终叠放结果。
+
+## 轨道真实层级计算（重点）
+- `track.relative_index` 越大，等价于 Z 轴越高（更靠上层）。
+- 轨道真实层级不能只看 `relative_index`，应按公式计算：
+  - `real_track_index = base_index(track.type) + track.relative_index`
+- 各轨道 `base_index`：
+  - `video`: `0`
+  - `audio`: `0`
+  - `effect`: `10000`
+  - `filter`: `11000`
+  - `sticker`: `14000`
+  - `text`: `15000`
+- 分析遮挡与叠放时，应先比较 `real_track_index`，再结合 segment 级 `render_index` 与时间区间。
 
 ## 与 query_script 的关联
 - query_script 对应草稿查询动作：`POST /cut_jianying/query_script`，在本仓库由 `scripts/draft_ops.sh query` 或 `scripts/draft_ops.py query` 执行。
