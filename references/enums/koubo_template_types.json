@@ -1,0 +1,99 @@
+{
+    "source": "manual_placeholder",
+    "items": [
+        {
+            "id": "koubo_d47e8a905f1b48798e76123456789abc",
+            "title": "高级黄·双行",
+            "descriptions": "双行口播模版，用于创建双行口播视频。",
+            "params_example": {
+                "video_url": [
+                    "https://player.install-ai-guider.top/example/koubo_source.mp4 // 原视频链接，必填，只能填1个。"
+                ], 
+                "text_content":"// 原视频正确文案，选填，小语种或者方言必填",
+                "title": "流光剪辑标题 // 顶部标题，必填",
+                "cover": [
+                    "https://player.install-ai-guider.top/example/mao.webp // 封面，选填"
+                ],
+                "name": "测试草稿 // 草稿名，选填"
+            }
+        },
+        {
+            "id": "koubo_ddfe028229d24696bf080303c95f604c",
+            "title": "经典·细黄",
+            "descriptions": "经典口播模版，用于创建经典口播视频，可以携带空镜并制作画中画效果。",
+            "params_example": {
+                "video_url": [
+                    "https://player.install-ai-guider.top/example/koubo_source.mp4 // 原视频链接，必填，只能填1个。"
+                ],
+                "text_content":"// 原视频正确文案，选填，小语种或者方言必填",
+                "kongjing_urls": [
+                    "https://player.install-ai-guider.top/example/koubo_kongjing_1.mp4 // 空镜素材链接，必填，最少1个，最多10个，最好单个时长不超过15秒"
+                ],
+                "author": "作者 // 作者，选填",
+                "cover": [
+                    "https://player.install-ai-guider.top/example/mao.webp // 封面，选填"
+                ],
+                "name": "测试草稿 // 草稿名，选填"
+            }
+        },
+        {
+            "id": "koubo_cbbe5e6b468844e782c961fd9ee07b7d",
+            "title": "ins风·繁体双语",
+            "descriptions": "ins风口播模版，用于创建ins风口播视频，带中文繁体和英语翻译字幕",
+            "params_example": {
+                "video_url": [
+                    "https://player.install-ai-guider.top/example/koubo_source.mp4 // 原视频链接，必填，只能填1个。"
+                ], 
+                "text_content":"// 原视频正确文案，选填，小语种或者方言必填",
+                "title": "流光剪辑标题 // 顶部标题，必填",
+                "cover": [
+                    "https://player.install-ai-guider.top/example/mao.webp // 封面，选填"
+                ],
+                "name": "测试草稿 // 草稿名，选填"
+            }
+        },
+        {
+            "id": "koubo_d8b7f9e05c4a11efb9620242ac120003",
+            "title": "国风经典",
+            "descriptions": "国风经典口播模版，用于创建经典口播视频。",
+            "params_example": {
+                "video_url": [
+                    "https://player.install-ai-guider.top/example/koubo_source.mp4 // 原视频链接，必填，只能填1个。"
+                ], 
+                "text_content":"// 原视频正确文案，选填，小语种或者方言必填",
+                "title": "流光剪辑标题 // 顶部标题，必填",
+                "cover": [
+                    "https://player.install-ai-guider.top/example/mao.webp // 封面，选填"
+                ],
+                "name": "测试草稿 // 草稿名，选填"
+            }
+        },
+        {
+            "id": "koubo_b82feeb636f3476a9a752ebd745d9750",
+            "title": "基础黄白",
+            "descriptions": "基础黄白相间的字幕风格",
+            "params_example": {
+                "video_url": [
+                    "https://player.install-ai-guider.top/example/koubo_source.mp4 // 原视频链接，必填，只能填1个。"
+                ], 
+                "text_content":"// 原视频正确文案，选填，小语种或者方言必填",
+                "title": "流光剪辑标题 // 顶部标题，选填",
+                "cover": [
+                    "https://player.install-ai-guider.top/example/mao.webp // 封面，选填"
+                ],
+                "name": "测试草稿 // 草稿名，选填"
+            }
+        },
+        {
+            "id": "koubo_2dfb2efedde84791b218cfd798531bc8",
+            "title": "AI剪气口",
+            "descriptions": "AI剪气口，基于AI大模型剪去重复气口",
+            "params_example": {
+                "video_url": [
+                    "https://player.install-ai-guider.top/example/koubo_source.mp4 // 原视频链接，必填，只能填1个。"
+                ], 
+                "title": "流光剪辑标题 // 顶部标题，选填"
+            }
+        }
+    ]
+}

@@ -25,6 +25,7 @@ dependency:
   - 三个 ASR 接口均支持传入 `content`（正确文案）以显著提升匹配准确率与处理速度。
   - 三种回包结构不同，必须按端点解析：`asr_basic -> result.raw.result.utterances`；`asr_nlp -> segments`；`asr_llm -> segments(含 keywords/en)`。
 * **字幕模版能力**：支持通过 `generate_smart_subtitle`（无正确文案，纯 ASR）或 `sta_subtitle`（有正确文案）自动生成更美观的字幕模版；两者均为异步任务，需通过 `smart_subtitle_task_status` 轮询结果，并支持 `add_media` 控制是否把原始素材加入草稿。
+* **口播模版能力**：支持通过 `agent/submit_agent_task` 发起口播模版任务，使用模板化参数快速完成固定范围的口播剪辑；任务异步执行并通过 `agent/task_status` 轮询，成功后输出草稿（可继续编辑），也可在草稿基础上调用 `generate_video` 直出视频做中间核验。
 * **脚本规划**：根据主题（如“成语故事”、“产品评测”）自动拆解分镜，确定各片段时长。
 * **草稿生命周期管理**：先创建并维护草稿，再进入编排流程；优先调用 `create_draft` 初始化草稿，按需使用 `modify_draft` 修改草稿名/封面，任务异常或清理阶段使用 `remove_draft` 删除草稿。
 * **反思自查**：在关键步骤后调用 `query_script` 回看当前草稿结构；当执行 `add_text`、`add_image`、`add_video` 等新增编排后，优先补一次 `generate_video + task_status` 中间渲染核验画面与节奏是否符合预期；若不一致，先定位问题再执行修正操作。
@@ -197,6 +198,18 @@ export VECTCUT_API_KEY="<your_token>"
   - 创建任务：`task_id`（或 `id` / `output.task_id`）
   - 查询任务：`output.draft_id`、`output.draft_url`、`output.video_url`
 
+### 当前已落地能力域：koubo
+- 规则：`rules/koubo_rules.md`
+- 参数：`references/endpoints/koubo.md`
+- 提示：`prompts/koubo_ops.md`
+- 端点：`POST /cut_jianying/agent/submit_agent_task`、`GET /cut_jianying/agent/task_status`
+- 关键入参：
+  - submit_agent_task：`agent_id`、`params.video_url(仅1个)`、`params.title`、`params.text_content(可选)`、`params.cover(可选)`、`params.name(可选)`
+  - agent_task_status：`task_id`
+- 关键出参：
+  - submit：`task_id`（或 `id` / `output.task_id`）
+  - status：`status`、`output.draft_id`、`output.draft_url`、`output.video_url`
+
 ### 当前已落地能力域：keyframe
 - 规则：`rules/keyframe_rules.md`
 - 参数：`references/endpoints/keyframe.md`
@@ -270,6 +283,8 @@ curl -X POST http://open.vectcut.com/cut_jianying/create_draft \
 - `/generate_smart_subtitle`：字幕模版生成（无正确文案输入，纯 ASR，异步）
 - `/sta_subtitle`：字幕模版生成（有正确文案输入，异步）
 - `/smart_subtitle_task_status`：查询字幕模版任务状态与草稿结果
+- `/agent/submit_agent_task`：提交口播模版任务（异步）
+- `/agent/task_status`：查询口播模版任务状态（成功通常返回草稿）
 
 ### 4) 获取可用枚举（动画/转场/特效/滤镜/字体）
 

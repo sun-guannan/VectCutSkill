@@ -17,6 +17,7 @@
 - `endpoints/image.md`：图片端点（add_image/modify_image/remove_image）
 - `endpoints/text.md`：文本端点（add_text/modify_text/remove_text）
 - `endpoints/subtitle_template.md`：字幕模版端点（generate_smart_subtitle/sta_subtitle/smart_subtitle_task_status）
+- `endpoints/koubo.md`：口播模版端点（submit_agent_task/agent_task_status）
 - `endpoints/keyframe.md`：关键帧端点（add_video_keyframe）
 - `endpoints/process.md`：预处理端点（extract_audio/split_video）
 
@@ -33,6 +34,7 @@
 - `enums/text_outro_anims.json`：`add_text.outro_animation` 可选值
 - `enums/text_loop_anims.json`：`add_text.loop_animation` 可选值
 - `enums/subtitle_template_typs.json`：字幕模版枚举（`id/title/detail`）
+- `enums/koubo_template_types.json`：口播模版枚举（`id/title/descriptions/params_example`）
 
 ## Query Script 输出解析
 - `query_script` 的 `output` 为草稿结构体解析入口。
