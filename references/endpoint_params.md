@@ -19,6 +19,7 @@
 - `endpoints/subtitle_template.md`：字幕模版端点（generate_smart_subtitle/sta_subtitle/smart_subtitle_task_status）
 - `endpoints/koubo.md`：口播模版端点（submit_agent_task/agent_task_status）
 - `endpoints/scrapt.md`：爬虫解析端点（parse_xiaohongshu/parse_douyin/parse_kuaishou/parse_bilibili/parse_tiktok/parse_youtube）
+- `endpoints/file_manager.md`：素材管理端点（upload_init/upload_complete/upload_file）
 - `endpoints/keyframe.md`：关键帧端点（add_video_keyframe）
 - `endpoints/process.md`：预处理端点（extract_audio/split_video）
 
