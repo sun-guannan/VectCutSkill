@@ -90,7 +90,7 @@ dependency:
 - [speech-synthesis](rules/speech-synthesis.md)
 - [split-video](rules/split-video.md)
 - [sts-upload](rules/sts-upload.md)
-- [text-background](rules/text-background.md)（兼容输入 `text-backgorund`）
+- [text-background](rules/text-background.md)
 - [text-keywords](rules/text-keywords.md)
 - [vectcut-api-search](rules/vectcut-api-search.md)
 - [vectcut-login](rules/vectcut-login.md)
