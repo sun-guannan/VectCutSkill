@@ -35,11 +35,16 @@ dependency:
 - 自动衔接 `describe-video` 做字幕+画面分析
 - 再按用户目标进入口播链、混剪链或广告链
 
-2. **口播成片（默认主链）**
-- 优先走 `cut-koubo` 完成一体化编排
+2. **口播成片（模板稳定链）**
+- 用户明确提到“模板口播/固定风格/稳定复现/降低不确定性”时，优先走 `cut-koubo-template`
+- 输入按模板接口严格校验（不同模板的必填参数不同，如 `title` 或 `kongjing_urls`）
+- 通过官方 `submit_agent_task` 固定链路出草稿，随后调用 `generate-cover`，并询问用户是否执行 `prepend_image` 插入首帧
+
+3. **口播成片（默认主链）**
+- 未指定模板稳定链时，优先走 `cut-koubo` 完成一体化编排
 - 最后可选 `cloud-render`
 
-3. **混剪链路**
+4. **混剪链路**
 - `describe-video` 做素材盘点
 - `split-video` 切片重组
 - `add-subtitle-template` 字幕上屏（如果有字幕）
@@ -47,7 +52,7 @@ dependency:
 - `add-bgm` + `add-effect_audio` 收口
 - `cloud-render` 导出
 
-4. **电商广告链路**
+5. **电商广告链路**
 - 人物突出优先：`human-pip` 或 `text-background`
 - 卖点强调：`text-keywords` + `add-title`
 - 素材不足：`generate-ai-image` / `generate-ai-video`
@@ -77,6 +82,7 @@ dependency:
 - [asr-vad](rules/asr-vad.md)
 - [cloud-render](rules/cloud-render.md)
 - [cut-koubo](rules/cut-koubo.md)
+- [cut-koubo-template](rules/cut-koubo-template.md)
 - [describe-video](rules/describe-video.md)
 - [extract-audio](rules/extract-audio.md)
 - [generate-ai-image](rules/generate-ai-image.md)
@@ -95,4 +101,3 @@ dependency:
 - [vectcut-api-search](rules/vectcut-api-search.md)
 - [vectcut-login](rules/vectcut-login.md)
 - [zoom-in-out](rules/zoom-in-out.md)
-

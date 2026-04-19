@@ -25,10 +25,10 @@ description: "专用于网感口播剪辑的一体化技能：自动完成素材
 - cut-koubo 必须保持“纯编排”职责：只输出分步计划，不可直接代替各子技能执行剪辑动作
 - 每一步都必须拆解到独立技能执行，禁止单脚本一体化写草稿
 
-## 主线任务状态落盘（必须，先于十二步）
+## 主线任务状态落盘（必须，先于十三步）
 
-- 开始执行十二步之前，先创建状态文件：`cut_koubo_state.json`（建议放在当前工作目录）
-- 状态文件必须覆盖十二步全部环节，初始状态统一为 `pending`
+- 开始执行十三步之前，先创建状态文件：`cut_koubo_state.json`（建议放在当前工作目录）
+- 状态文件必须覆盖十三步全部环节，初始状态统一为 `pending`
 - 每个环节执行前更新为 `running`，执行成功更新为 `completed`，失败更新为 `failed`，跳过更新为 `skipped`
 - 每执行完一个环节，必须立即回读该状态文件，确认主线状态一致后再进入下一环节
 - 若中途分叉（重试/回退/切分支），必须先根据状态文件恢复主线，再继续执行后续步骤
@@ -55,7 +55,7 @@ description: "专用于网感口播剪辑的一体化技能：自动完成素材
 }
 ```
 
-## 十二步工作流（固定）
+## 十三步工作流（固定）
 
 说明：以下每一步必须调用对应技能独立执行；cut-koubo 只负责给出步骤顺序与参数建议，不直接执行这些步骤。
 
@@ -83,74 +83,98 @@ description: "专用于网感口播剪辑的一体化技能：自动完成素材
 
 4. **默认去气口 + 口播入草稿（asr-vad + add_video）**
 - 默认必须先走 `asr-vad` 去气口，获得片段化工作流；仅当用户明确要求“保留原始气口”时才允许跳过
-- 使用官方 `add_video` 接口分段写入口播（参考：https://docs.vectcut.com/321243745e0）
+- 必须执行 add_video 写入口播，使用官方 `add_video` 接口分段写入口播（参考：https://docs.vectcut.com/321243745e0）
 - 去气口生效时，字幕上屏源必须使用 `asr-vad` 输出的 `editable_subtitles`（与去气口后时间轴一致）
 - 人声 `volume=20`
-- 完成后 `query-draft` 校验；异常时用 `vectcut-api-search` 检索 `modify*` 接口修正
+- **状态检查点**：完成后必须 `query-draft` 校验，确认草稿中已存在口播视频片段；异常时用 `vectcut-api-search` 检索 `modify*` 接口修正
+- **状态文件更新**：本步骤完成后，状态文件中"4.默认去气口+口播入草稿"必须标记为 `completed`，并记录 `draft_id` 和 `add_video_main_completed: true`
 
-5. **关键画面增强（效果类技能）**
-- 按关键位置添加，优先级固定：`human-pip` > `text-background` > `add-effect`
-- 先从字幕里选择“这一句话需要增强”的目标句（`focus_sentence`），并以该句时间戳作为增强时间窗：
+5. **关键画面增强判定（仅判定，不执行）**
+- **本步骤职责**：从字幕中选择需要增强的目标句，判定使用哪种增强方式，**不执行具体增强动作**
+- 先从字幕里选择"这一句话需要增强"的目标句（`focus_sentence`），并以该句时间戳作为增强时间窗：
   - `focus_start = sentence.start_ms / 1000`
   - `focus_end = sentence.end_ms / 1000`
   - `focus_duration = focus_end - focus_start`（必须 > 0）
   - 默认优先使用去气口后的字幕时间轴（`asr-vad editable_subtitles`）；仅在第4步被明确跳过时使用 `llm-asr nlp` 时间戳
-- 命中 `human-pip` 或 `text-background` 时，必须先执行“空窗 + 切片”前置，禁止直接叠加：
-  - 用 `add_video` 在同一草稿重建原视频时间线并给重点段留空窗：`[0,focus_start]` 与 `[focus_end,video_end]` 两段回填到原时间轴，重点段不回填（参考：`https://docs.vectcut.com/321243745e0`）
-  - 用 `split-video` 从原视频按 `focus_start~focus_end` 切出重点片段 URL（参考：`https://docs.vectcut.com/444634731e0`）
-  - 将切片结果作为 `human-pip`/`text-background` 的输入，并以 `target_start=focus_start` 写回草稿
-- 必须先做“命中判定”，再执行，不允许直接跳到 `add-effect`：
-  - 命中 `human-pip` 条件（有人像主体 + 有可用背景图/视频）=> 仅执行 `human-pip`，并把 `text-background`/`add-effect` 记为 `skipped`
-  - 未命中 `human-pip` 但命中 `text-background` 条件（有清晰人物前景 + 存在需强化关键词）=> 执行 `text-background`，并把 `add-effect` 记为 `skipped`
-  - 前两者都未命中，且用户明确允许降级时，才执行 `add-effect`
-- 若未提供“允许降级到 add-effect”的明确指令，默认不得执行 `add-effect`
+- **命中判定规则**（按优先级检查，仅判定不执行）：
+  - 命中 `human-pip` 条件（有人像主体 + 有可用背景图/视频）=> 判定结果：`use_human_pip=true`
+  - 未命中 `human-pip` 但命中 `text-background` 条件（有清晰人物前景 + 存在需强化关键词）=> 判定结果：`use_text_background=true`
+  - 前两者都未命中，且用户明确允许降级时 => 判定结果：`use_add_effect=true`
+  - 若未提供"允许降级到 add-effect"的明确指令，默认判定结果：`skip_enhancement=true`
 - 文字重点仍由 `text-keywords` 负责（可与上面优先级策略并行使用）
-- 完成后 `query-draft` 校验；异常时走 `vectcut-api-search` + `modify*`
+- **状态文件更新**：本步骤完成后，状态文件中"5.关键画面增强判定"必须标记为 `completed`，并记录判定结果（`enhancement_decision: "human-pip" | "text-background" | "add-effect" | "skip"`）和 `focus_start`、`focus_end`
 
-6. **人物画中画分支（human-pip）**
-- 若使用 `human-pip`：
-  - 进入本分支前必须先执行一次 `query-draft` 反思复查第5步结果：确认 `focus_start~focus_end` 为空窗（没有原主视频片段覆盖）
-  - 若复查发现空窗未生效（仍有主视频覆盖重点时间窗），必须先回退并重做第5步 `add_video` 留空窗，再次 `query-draft` 通过后才能继续 `human-pip`
-  - 若用户提供 b-roll 素材，必须先把 b-roll 写回草稿再执行 `human-pip`：
+6. **人物画中画执行（human-pip）**
+- **执行条件检查**：读取状态文件，仅当第5步判定结果为 `use_human_pip=true` 时才执行本步骤，否则标记为 `skipped` 并跳过
+- **第一步：删除已添加的视频分段**（为增强效果留出空窗）：
+  - 读取状态文件，获取第4步 `add_video` 添加的视频片段信息
+  - 使用 `vectcut-api-search` 检索删除视频片段的接口（关键词：`delete video segment` 或 `remove video clip`）
+  - 调用删除接口，删除 `focus_start~focus_end` 时间窗内的所有主视频片段
+  - **删除完成检查**：执行 `query-draft` 确认 `focus_start~focus_end` 已成为空窗（没有主视频片段）
+  - 若删除未生效，必须重试删除操作，直到 `query-draft` 确认空窗生效
+- **第二步：切片准备**：
+  - 用 `split-video` 从原视频按 `focus_start~focus_end` 切出重点片段 URL（参考：`https://docs.vectcut.com/444634731e0`）
+- **第三步：背景素材准备**：
+  - 若用户提供 b-roll 素材，必须先把 b-roll 写回草稿：
     - 图片 b-roll 用 `add_image`，且 `start=focus_start`、`end=focus_end`
     - 视频 b-roll 用 `add_video`，其中素材截取区间 `start/end` 的时长需等于 `focus_end-focus_start`，并设置 `target_start=focus_start`、`volume=-100`
-  - 先执行第5步“空窗 + 切片”前置，确保增强仅作用于重点片段
-  - 优先从第一步空镜素材中找背景
-  - 先用官方能力定位可用片段时间戳（参考：https://docs.vectcut.com/438660710e0）
-  - 再用 `split-video` 切片（参考：https://docs.vectcut.com/444634731e0），切片结果作为人物前景输入
-  - `human-pip` 写回时必须指定 `draft_id` 与 `target_start=focus_start`
+  - 若无用户提供的 b-roll，优先从第1步空镜素材中找背景
   - 若无可用 b-roll 素材，联动 `generate-ai-image` 或 `generate-ai-video` 补镜
+- **第四步：执行 human-pip**：
+  - 先用官方能力定位可用片段时间戳（参考：https://docs.vectcut.com/438660710e0）
+  - 切片结果作为人物前景输入
+  - `human-pip` 写回时必须指定 `draft_id` 与 `target_start=focus_start`
   - 音量保持 `volume=20`
-- 该分支与 `add_video` 互斥
-- 完成后 `query-draft` 校验；异常时走 `vectcut-api-search` + `modify*`
-- 当第5步已命中 `human-pip` 时，本分支状态应为 `completed`；未命中时标记为 `skipped`（不得补跑以免重复叠加）
+- **状态检查点**：完成后 `query-draft` 校验；异常时走 `vectcut-api-search` + `modify*`
+- **状态文件更新**：本步骤完成后，状态文件中"6.人物画中画执行"必须标记为 `completed`（执行了）或 `skipped`（第5步未命中）
 
-7. **关键点提示音（add-effect_audio）**
+7. **文字背景执行（text-background）**
+- **执行条件检查**：读取状态文件，仅当第5步判定结果为 `use_text_background=true` 时才执行本步骤，否则标记为 `skipped` 并跳过
+- **第一步：删除已添加的视频分段**（为增强效果留出空窗）：
+  - 读取状态文件，获取第4步 `add_video` 添加的视频片段信息
+  - 使用 `vectcut-api-search` 检索删除视频片段的接口（关键词：`delete video segment` 或 `remove video clip`）
+  - 调用删除接口，删除 `focus_start~focus_end` 时间窗内的所有主视频片段
+  - **删除完成检查**：执行 `query-draft` 确认 `focus_start~focus_end` 已成为空窗（没有主视频片段）
+  - 若删除未生效，必须重试删除操作，直到 `query-draft` 确认空窗生效
+- **第二步：背景素材准备**：
+  - 若用户提供 b-roll 素材，必须先把 b-roll 写回草稿：
+    - 图片 b-roll 用 `add_image`，且 `start=focus_start`、`end=focus_end`
+    - 视频 b-roll 用 `add_video`，其中素材截取区间 `start/end` 的时长需等于 `focus_end-focus_start`，并设置 `target_start=focus_start`、`volume=-100`
+  - 若无用户提供的 b-roll，优先从第1步空镜素材中找背景
+  - 若无可用 b-roll 素材，联动 `generate-ai-image` 或 `generate-ai-video` 补镜
+- **第三步：添加文字关键词**：
+  - 使用 `text-keywords` 能力在 `focus_start~focus_end` 时间窗添加关键词文字特效
+  - 关键词从 `focus_sentence` 中提取
+- **状态检查点**：完成后 `query-draft` 校验；异常时走 `vectcut-api-search` + `modify*`
+- **状态文件更新**：本步骤完成后，状态文件中"7.文字背景执行"必须标记为 `completed`（执行了）或 `skipped`（第5步未命中）
+
+8. **关键点提示音（add-effect_audio）**
 - 在开头和关键观点位置添加提示音
 - 完成后 `query-draft` 校验；异常时走 `vectcut-api-search` + `modify*`
 
-8. **字幕上屏（add-subtitle-template）**
+9. **字幕上屏（add-subtitle-template）**
 - 使用 `add-subtitle-template` 上屏
 - 上屏字幕源选择规则：
   - 若第4步执行了 `asr-vad`：必须使用 `asr-vad` 的 `editable_subtitles`
   - 若第4步被明确跳过（用户要求保留原始气口）：使用 `llm-asr nlp`
 - 完成后 `query-draft` 校验；异常时走 `vectcut-api-search` + `modify*`
 
-9. **循环 BGM（add-bgm）**
+10. **循环 BGM（add-bgm）**
 - 调用 `add-bgm` 自动铺满全片
 - 完成后 `query-draft` 校验；异常时走 `vectcut-api-search` + `modify*`
 
-10. **标题收口（add-title）**
+11. **标题收口（add-title）**
 - 根据内容自动生成标题并调用 `add-title`（标题不超过 8 个字）
 - 调用官方 `modify-draft`（https://docs.vectcut.com/429210482e0）把草稿名改为该标题
 - 完成后 `query-draft` 校验；异常时走 `vectcut-api-search` + `modify*`
 
-11. **添加封面图（generate-cover）**
-- cut-koubo 不执行封面步骤；主链完成后必须主动调用 `generate-cover` 技能生成封面图并回写到草稿
-- 封面可按“视频截图+提示词”或“基于草稿文案”两种来源生成
-- 完成后 `query-draft` 校验；异常时走 `vectcut-api-search` + `modify*`
+12. **添加封面图（generate-cover）**
+- **必须执行**：调用 `generate-cover` 技能生成封面图并回写到草稿
+- 封面可按"视频截图+提示词"或"基于草稿文案"两种来源生成
+- **状态检查点**：完成后 `query-draft` 校验；异常时走 `vectcut-api-search` + `modify*`
+- **状态文件更新**：本步骤完成后，状态文件中"11.添加封面图"必须标记为 `completed`，并记录封面图 URL
 
-12. **可选添加首帧图（prepend_image）**
+13. **可选添加首帧图（prepend_image）**
 - 这是高影响操作，执行前必须先明确询问用户是否添加，并确认用户理解其作用与风险
 - 风险说明必须提前告知：该操作会把草稿所有轨道元素整体后移一帧，再把首帧图插入第1帧
 - 还需告知用户：首帧展示时长极短，若不了解首帧图位置与作用，默认不执行
