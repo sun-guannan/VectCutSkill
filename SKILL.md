@@ -52,6 +52,12 @@ dependency:
 - `add-bgm` + `add-effect_audio` 收口
 - `cloud-render` 导出
 
+4.1 **混剪配音成片（video-voiceover-remix 子链路）**
+- 先按 `rules/video-voiceover-remix.md` 执行固定七步：`describe-video` -> `add_video(volume=-100)` -> 文案生成 -> `speech-synthesis + add_audio(volume=20)` -> `llm-asr(nlp) + add-subtitle-template` -> `add-bgm` -> `add-effect_audio`
+- 第 2 步重排优先调用内置脚本：`scripts/remix_and_add_videos.py`
+- 第 3 步文案字数按每秒 1.5 字估算
+- 第 4 步默认音色：`voice_id=gv_8195cd8b03f74658a9d92c9b2a9e9cba`，并提示用户可到 VectCut 官网查看可用音色
+
 5. **电商广告链路**
 - 人物突出优先：`human-pip` 或 `text-background`
 - 卖点强调：`text-keywords` + `add-title`
@@ -98,6 +104,7 @@ dependency:
 - [sts-upload](rules/sts-upload.md)
 - [text-background](rules/text-background.md)
 - [text-keywords](rules/text-keywords.md)
+- [video-voiceover-remix](rules/video-voiceover-remix.md)
 - [vectcut-api-search](rules/vectcut-api-search.md)
 - [vectcut-login](rules/vectcut-login.md)
 - [zoom-in-out](rules/zoom-in-out.md)
