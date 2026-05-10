@@ -16,7 +16,6 @@ description: "根据用户输入的音视频与字幕信息，自动选择并套
 - `<skill-path>/scripts/template_dual_track_motion.py`（交替轨道 + 关键帧上移）
 - `<skill-path>/scripts/template_bilingual_keyword.py`（中英双语 + 关键词高亮）
 - `<skill-path>/scripts/template_preset_transition.py`（主字幕 + 预设转场）
-- `<skill-path>/scripts/koubo_auto_edit.py`（口播一键编排：`nlp` 字幕 + 模板 + 提示音 + 特效 + BGM）
 - 要求：先把用户输入字幕标准化为模板可接收结构，再调用模板函数产出 `draft_id + inputs + script`
 - 禁止直接重写模板逻辑；只允许做“输入映射/补齐”和“执行 workflow”
 
@@ -72,7 +71,52 @@ description: "根据用户输入的音视频与字幕信息，自动选择并套
 2. **仅有音视频，无结构化字幕（情况 1.2）**
 - 必须先调用 `llm-asr` 技能提取结构化字幕
 - 默认 `effect_mode` 固定 `nlp`
-- 拿到 `segments` 后进入“模板匹配”步骤
+- 必须先把原始素材写入草稿，再进入模板匹配：
+  - 有 `video_url`：调用 `add_video`（文档：https://docs.vectcut.com/321243745e0）
+  - 仅有 `audio_url`：调用 `add_audio`（文档：https://docs.vectcut.com/321196190e0）
+  - 默认参数约定：`start=0`、`end=0`（表示取到源素材结尾）、`target_start=0`
+  - `add_video` 关键字段：`video_url`, `start`, `end`, `target_start`, `track_name`, `draft_id`
+  - `add_audio` 关键字段：`audio_url`, `start`, `end`, `target_start`, `track_name`, `draft_id`
+  - `add_video` 请求示例：
+
+```bash
+curl --location --request POST 'https://open.vectcut.com/cut_jianying/add_video' \
+  --header 'Content-Type: application/json' \
+  --header 'Authorization: Bearer <VECTCUT_API_KEY>' \
+  --header 'Accept: */*' \
+  --header 'Host: open.vectcut.com' \
+  --header 'Connection: keep-alive' \
+  --data-raw '{
+    "video_url": "https://cdn.wanx.aliyuncs.com/wanx/1719234057367822001/text_to_video/092faf3c94244973ab752ee1280ba76f.mp4?spm=5176.29623064.0.0.41ed26d6cBOhV3&file=092faf3c94244973ab752ee1280ba76f.mp4", // 视频链接
+    "start": 0, // 原视频的截取开始时间，默认0
+    "end": 0, // 原视频的截取结束时间，默认视频时长
+    "target_start": 0, // 视频插入轨道的开始时间，默认0
+    "track_name": "video_main",
+    "draft_id": "<draft_id>"
+  }'
+```
+
+  - `add_audio` 请求示例：
+
+```bash
+curl --location --request POST 'https://open.vectcut.com/cut_jianying/add_audio' \
+  --header 'Content-Type: application/json' \
+  --header 'Authorization: Bearer <VECTCUT_API_KEY>' \
+  --header 'Accept: */*' \
+  --header 'Host: open.vectcut.com' \
+  --header 'Connection: keep-alive' \
+  --data-raw '{
+    "audio_url": "https://lf3-lv-music-tos.faceu.com/obj/tos-cn-ve-2774/oYACBQRCMlWBIrZipvQZhI5LAlUFYii0RwEPh",
+    "start": 0, // 原音频的截取开始时间，默认0
+    "end": 0, // 原音频的截取结束时间，默认音频时长
+    "target_start": 0,// 音频插入轨道的开始时间，默认0
+    "track_name": "audio_main",
+    "draft_id": "<draft_id>"
+  }'
+```
+  - 必须使用素材写回接口返回的 `draft_id` 作为后续编辑草稿 ID
+  - 后续 `llm-asr`、模板脚本与 `execute_workflow` 必须显式传入同一个 `draft_id`，禁止新建草稿分支
+- 拿到 `segments` 后，基于上述同一 `draft_id` 进入“模板匹配”步骤
 
 3. **音视频 + 结构化字幕都已具备（情况 1.3）**
 - 直接进入“模板匹配”步骤
@@ -147,12 +191,6 @@ description: "根据用户输入的音视频与字幕信息，自动选择并套
 1. `add-effect_audio`：开头 `target_start=0` 添加一次提示音
 2. `add-effect`：开头与重点句时间段各添加一次特效
 3. `add-bgm`：查询草稿时长后自动铺满背景音乐
-
-可直接使用：
-
-```bash
-python <skill-path>/scripts/koubo_auto_edit.py "https://example.com/video.mp4"
-```
 
 ## 与用户交互规则
 

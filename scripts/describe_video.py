@@ -608,27 +608,40 @@ def maybe_split_long_video(token, url, poll_interval, timeout, chunk_seconds=300
         file=sys.stderr,
         flush=True,
     )
-    submit_body = submit_asr_basic_task(token, url)
-    print(
-        f"[progress] split-prep ASR submitted, task_id={submit_body.get('task_id', '')}; polling...",
-        file=sys.stderr,
-        flush=True,
-    )
-    asr_status_body = wait_asr_done(
-        token=token,
-        task_id=submit_body["task_id"],
-        poll_interval=poll_interval,
-        timeout=timeout,
-    )
-    if asr_status_body.get("status") != "success":
-        raise RuntimeError(f"ASR task failed for split planning: {asr_status_body}")
-    parsed_asr = _extract_asr_text_and_segments(asr_status_body)
-    asr_segments = parsed_asr.get("segments") or []
-    print(
-        f"[progress] split-prep ASR done, segment_count={len(asr_segments)}",
-        file=sys.stderr,
-        flush=True,
-    )
+    asr_segments = []
+    try:
+        submit_body = submit_asr_basic_task(token, url)
+        print(
+            f"[progress] split-prep ASR submitted, task_id={submit_body.get('task_id', '')}; polling...",
+            file=sys.stderr,
+            flush=True,
+        )
+        asr_status_body = wait_asr_done(
+            token=token,
+            task_id=submit_body["task_id"],
+            poll_interval=poll_interval,
+            timeout=timeout,
+        )
+        if asr_status_body.get("status") == "success":
+            parsed_asr = _extract_asr_text_and_segments(asr_status_body)
+            asr_segments = parsed_asr.get("segments") or []
+            print(
+                f"[progress] split-prep ASR done, segment_count={len(asr_segments)}",
+                file=sys.stderr,
+                flush=True,
+            )
+        else:
+            print(
+                "[progress] split-prep ASR failed, fallback to hard-cut split plan",
+                file=sys.stderr,
+                flush=True,
+            )
+    except Exception as exc:
+        print(
+            f"[progress] split-prep ASR exception, fallback to hard-cut split plan: {exc}",
+            file=sys.stderr,
+            flush=True,
+        )
 
     ranges = _build_asr_aligned_ranges(
         duration_seconds=duration_seconds,
@@ -865,6 +878,11 @@ def build_asset_analysis(url, asr_status_body, visual_result, index, preproc):
             },
             "task_id": asr_status_body.get("task_id", ""),
             "status": asr_status_body.get("status", ""),
+            "error": (
+                (asr_status_body.get("result") or {}).get("error")
+                or asr_status_body.get("error")
+                or ""
+            ),
             "mode": parsed_asr["mode"],
             "effect_mode": parsed_asr["effect_mode"],
             "full_text": full_text,
@@ -1078,37 +1096,62 @@ def run(urls, analysis_prompt="", poll_interval=2.0, timeout=600.0):
                 file=sys.stderr,
                 flush=True,
             )
-            submit_body = submit_asr_basic_task(token, preproc["asr_input_url"])
-            print(
-                (
-                    f"[progress][{idx}/{total}]{clip_label} ASR submitted, "
-                    f"task_id={submit_body.get('task_id', '')}; polling..."
-                ),
-                file=sys.stderr,
-                flush=True,
-            )
-            status_body = wait_asr_done(
-                token=token,
-                task_id=submit_body["task_id"],
-                poll_interval=poll_interval,
-                timeout=timeout,
-            )
-            print(
-                (
-                    f"[progress][{idx}/{total}]{clip_label} ASR done, "
-                    f"status={status_body.get('status')}"
-                ),
-                file=sys.stderr,
-                flush=True,
-            )
+            status_body = {}
+            submit_body = {}
+            try:
+                submit_body = submit_asr_basic_task(token, preproc["asr_input_url"])
+                print(
+                    (
+                        f"[progress][{idx}/{total}]{clip_label} ASR submitted, "
+                        f"task_id={submit_body.get('task_id', '')}; polling..."
+                    ),
+                    file=sys.stderr,
+                    flush=True,
+                )
+                status_body = wait_asr_done(
+                    token=token,
+                    task_id=submit_body["task_id"],
+                    poll_interval=poll_interval,
+                    timeout=timeout,
+                )
+                print(
+                    (
+                        f"[progress][{idx}/{total}]{clip_label} ASR done, "
+                        f"status={status_body.get('status')}"
+                    ),
+                    file=sys.stderr,
+                    flush=True,
+                )
+                status_body["task_id"] = submit_body.get("task_id", "")
+            except Exception as exc:
+                status_body = {
+                    "task_id": submit_body.get("task_id", ""),
+                    "status": "failed",
+                    "error": str(exc),
+                    "result": {"error": str(exc)},
+                }
+                print(
+                    (
+                        f"[progress][{idx}/{total}]{clip_label} ASR failed but continue: "
+                        f"{exc}"
+                    ),
+                    file=sys.stderr,
+                    flush=True,
+                )
             if status_body.get("status") != "success":
                 error = (
                     (status_body.get("result") or {}).get("error")
                     or status_body.get("error")
                     or str(status_body)
                 )
-                raise RuntimeError(f"ASR task failed for {analysis_url}: {error}")
-            status_body["task_id"] = submit_body.get("task_id", "")
+                print(
+                    (
+                        f"[progress][{idx}/{total}]{clip_label} ASR non-fatal error: "
+                        f"{error}"
+                    ),
+                    file=sys.stderr,
+                    flush=True,
+                )
 
             visual_result = {
                 "prompt": analysis_prompt.strip(),
@@ -1130,12 +1173,12 @@ def run(urls, analysis_prompt="", poll_interval=2.0, timeout=600.0):
                     flush=True,
                 )
             except Exception as exc:
-                # 对明显视频链接，视频理解失败应直接中断；否则记录错误并继续。
-                if _looks_like_video_url(analysis_url):
-                    raise
                 visual_result["error"] = str(exc)
                 print(
-                    f"[progress][{idx}/{total}]{clip_label} video_detail failed: {exc}",
+                    (
+                        f"[progress][{idx}/{total}]{clip_label} "
+                        f"video_detail failed but continue: {exc}"
+                    ),
                     file=sys.stderr,
                     flush=True,
                 )

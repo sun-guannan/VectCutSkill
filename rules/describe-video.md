@@ -7,7 +7,8 @@ description: "在剪辑开始前批量读取并理解所有素材：先提取音
 
 用于剪辑前的“素材盘点”与“可剪性分析”。
 
-核心流程固定为三步：
+核心流程固定为四步：
+- 第零步：先调用 `get_duration` 获取素材时长，超过 10 分钟（`>600s`）直接拒绝处理
 - 第一步：若输入为视频，先调用 `extract-audio` 提取音频 URL
 - 第二步：调用识别字幕接口（`basic`）拿到文本与分句时间戳
 - 第三步：调用视频理解接口拿到画面细节，并支持自定义 `prompt` 查询关键问题，再整合为结构化文档
@@ -17,6 +18,8 @@ description: "在剪辑开始前批量读取并理解所有素材：先提取音
 - 本技能中的 `basic` ASR 结果仅用于“素材分析”和“剪辑决策参考”
 - 禁止把本技能输出的 `segments/full_text` 直接用于字幕上屏
 - 若后续要做字幕模板/字幕上屏，必须重新调用 `llm-asr` 且 `effect_mode=nlp`
+- `llm-asr`（basic）失败不视为任务失败：视频可能无人声，记录该素材“无可用语音/字幕”后继续后续步骤
+- `video_detail` 失败不视为任务失败：视频可能无有效画面或解析失败，记录该素材“无可用画面理解结果”后继续
 
 ## 适用场景
 
@@ -70,15 +73,20 @@ python <skill-path>/scripts/describe_video.py \
 
 ## 接口调用约束
 
+- 时长预检（必须先执行）：
+  - `POST /cut_jianying/get_duration`（文档：https://docs.vectcut.com/328289318e0）
+  - 若返回时长 `>600s`，直接拒绝该素材并返回“超过 10 分钟不处理”
 - 音频前置提取（视频输入时默认执行）：
   - `POST /process/extract_audio/submit_task/submit_extract_audio_task`
   - `GET /process/extract_audio/submit_task/task_status` 轮询
 - 字幕提取固定使用：
   - `POST /llm/asr/asr_llm/submit_task/submit_asr_llm_task`，`effect_mode=basic`
   - `GET /llm/asr/asr_llm/submit_task/task_status` 轮询
+  - 失败按“非致命错误”处理：继续执行 `video_detail` 与报告汇总
 - 画面理解使用：
   - `POST /llm/video_detail`
   - 可透传 `prompt` 用于定向检查关键信息
+  - 失败按“非致命错误”处理：继续输出其余可用结果
 
 ## 输出结果
 
@@ -92,3 +100,4 @@ python <skill-path>/scripts/describe_video.py \
 - 素材类型判断（口播候选 / B-roll 候选）
 - 总体统计（口播数量、可搭配素材数量）
 - 剪辑建议（是否建议去气口、是否建议口播+B-roll搭配）
+- 错误容忍记录（如“无人声导致 ASR 失败”“无有效画面导致 video_detail 失败”）

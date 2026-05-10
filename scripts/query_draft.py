@@ -24,7 +24,6 @@ def query_draft(draft_id, force_update=True):
 
     payload = {"draft_id": draft_id, "force_update": force_update}
 
-    print(f"Querying draft script: {draft_id} (force_update={force_update})...")
     resp = requests.post(
         f"{BASE_URL}/cut_jianying/query_script",
         headers=headers,
