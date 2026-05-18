@@ -5,7 +5,7 @@ description: 通过 VectCut deeplink 触发草稿下载/打开。用户提到“
 
 # Draft Downloader Skill
 
-将一个或多个草稿 ID 组装为 `vectcut://open?draft_id=...` deeplink，并调用系统打开器触发 VectCut 客户端拉取草稿。
+将一个或多个草稿 ID 组装为 `vectcut://download?draft_id=...` deeplink，并调用系统打开器触发 VectCut 客户端拉取草稿。
 
 ## When to use
 
@@ -44,7 +44,7 @@ python <skill-path>/scripts/draft_downloader.py \
 
 1. 清洗输入：去空白、按出现顺序去重。
 2. 校验 ID：默认要求每个 ID 以 `dfd_cat_` 开头。
-3. 构建 deeplink：`vectcut://open?draft_id=a&draft_id=b`（重复参数形式）。
+3. 构建 deeplink：`vectcut://download?draft_id=a&draft_id=b`（重复参数形式）。
 4. 尝试打开：按系统可用性依次尝试 `open` / `xdg-open` / `gio open` / `cmd /c start` / `explorer`。
 5. 输出结果：打印 JSON，包含 deeplink、有效草稿 ID 列表、是否成功触发。
 
@@ -53,7 +53,7 @@ python <skill-path>/scripts/draft_downloader.py \
 ```json
 {
   "success": true,
-  "deeplink": "vectcut://open?draft_id=dfd_cat_1&draft_id=dfd_cat_2",
+  "deeplink": "vectcut://download?draft_id=dfd_cat_1&draft_id=dfd_cat_2",
   "draft_ids": ["dfd_cat_1", "dfd_cat_2"],
   "message": "Deeplink triggered. If VectCut is installed and protocol registered, download/open should start."
 }

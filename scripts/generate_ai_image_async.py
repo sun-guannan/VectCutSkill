@@ -285,9 +285,9 @@ def main():
         default=str(
             Path(__file__).resolve().parent.parent
             / "references"
-            / "model_capabilities.json"
+            / "ai-image-model_capabilities.json"
         ),
-        help="Model capability enum json path",
+        help="AI image model capability enum json path",
     )
     args = parser.parse_args()
 

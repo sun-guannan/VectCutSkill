@@ -54,15 +54,6 @@
       "supports_gen_duration": true,
       "allowed_gen_duration": [6, 10, 15],
       "supports_generate_audio": false
-    },
-    "sora2": {
-      "aliases": ["sora2"],
-      "allowed_resolutions": ["1920x1080", "1080x1920", "1280x720", "720x1280"],
-      "supports_images": true,
-      "max_images": 2,
-      "supports_gen_duration": true,
-      "allowed_gen_duration": [5, 10, 15],
-      "supports_generate_audio": false
     }
   }
 }

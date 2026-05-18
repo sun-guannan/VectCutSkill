@@ -32,7 +32,7 @@ def clean_draft_ids(draft_ids: Iterable[str], required_prefix: str = "dfd_cat_")
     return cleaned
 
 
-def build_deeplink(draft_ids: list[str], scheme: str = "vectcut", route: str = "open") -> str:
+def build_deeplink(draft_ids: list[str], scheme: str = "vectcut", route: str = "download") -> str:
     """Build deeplink with repeated `draft_id` query params."""
     qs = urlencode([("draft_id", d) for d in draft_ids], doseq=True)
     route = (route or "").strip("/")
@@ -82,8 +82,8 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--route",
-        default="open",
-        help="Deeplink route (default: open).",
+        default="download",
+        help="Deeplink route (default: download).",
     )
     parser.add_argument(
         "--allow-any-prefix",
